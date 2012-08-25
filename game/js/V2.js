@@ -77,6 +77,12 @@ function V2(init_x, init_y)
     y = new_y;
     norm = -1.0;
   }
+  obj.setV2 = function(v)
+  {
+    x = v.x();
+    y = v.y();
+    norm = -1.0;
+  }
   
   obj.setNorm = function(new_norm)
   {
@@ -103,6 +109,16 @@ function V2(init_x, init_y)
   obj.addXY = function(amount_x, amount_y)
   {
     obj.setXY(x + amount_x, y + amount_y);
+  }
+  obj.addV2 = function(v)
+  {
+    obj.setXY(x + v.x(), y + v.y());
+  }
+  
+  obj.scale = function(amount)
+  {
+    x *= amount;
+    y *= amount;
   }
   
   obj.addNorm = function(amount)
