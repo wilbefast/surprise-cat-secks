@@ -31,11 +31,24 @@ Game.MAX_FPS = 60;
 // colours
 Game.C_BACKGROUND = 'rgb(255, 0, 0)';
 Game.C_TEXT = 'rgb(0, 0, 128)';
-// key-codes
+// left keys
 Game.K_LEFT = 37;
+Game.K_A = 'A'.charCodeAt(0);		// qwerty + dvorak
+Game.K_Q = 'Q'.charCodeAt(0);		// azerty
+// right keys
 Game.K_RIGHT = 39;
+Game.K_D = 'D'.charCodeAt(0);		// qwerty + azerty
+Game.K_E = 'E'.charCodeAt(0);		// dvorak
+// up keys
 Game.K_UP = 38;
+Game.K_W = 'W'.charCodeAt(0);		// qwerty
+Game.K_Z = 'Z'.charCodeAt(0);		// azerty
+Game.K_COMMA = 1;			// dvorak
+// down keys
 Game.K_DOWN = 40;
+Game.K_S = 'S'.charCodeAt(0);		// qwerty + azerty
+Game.K_O = 'O'.charCodeAt(0);		// dvorak
+// other keys
 Game.K_CTRL = 17;
 Game.K_SPACE = 32;
 
@@ -101,11 +114,33 @@ function Game()
       things.splice(cleanUp[i], 1);
   }
   
-  var reset_k_direction = function()
+  var injectKeyState = function(key, state)
   {
+    // work out what the input is
+    switch(key)
+    {	  
+      case typ.K_LEFT: 	case typ.K_A: 	case typ.K_Q:	
+	k_left = state; 	
+	break;
+      case typ.K_RIGHT: case typ.K_D: 	case typ.K_E: 	
+	k_right = state; 
+	break;
+      case typ.K_UP: 	case typ.K_W: 	case typ.K_Z:	case typ.K_COMMA:		
+	k_up = state; 	
+	break;
+      case typ.K_DOWN:	case typ.K_S:	case typ.K_O: 		
+	k_down = state; 	
+	break;
+      case typ.K_CTRL:		
+	k_shoot = state; 
+	break;
+    }
+    
+    // reset the direction based on input
     k_direction.setX((k_left && !k_right) ? -1 : ((!k_left && k_right) ? 1 : 0));
     k_direction.setY((k_up && !k_down) ? -1 : ((!k_up && k_down) ? 1 : 0));
     
+    // normalise only if nessecary
     if(k_direction.x() && k_direction.x())
       k_direction.normalise();
   }
@@ -150,28 +185,12 @@ function Game()
   
   obj.injectKeyDown = function(key)
   {
-    switch(key)
-    {	  
-      case typ.K_LEFT: 		k_left = true; 		break;
-      case typ.K_RIGHT: 	k_right = true; 	break;
-      case typ.K_UP: 		k_up = true; 		break;
-      case typ.K_DOWN: 		k_down = true; 		break;
-      case typ.K_CTRL:		k_shoot = true; 	break;
-    }
-    reset_k_direction();
+    injectKeyState(key, true);
   }
   
   obj.injectKeyUp = function(key)
   {
-    switch(key)
-    {	  
-      case typ.K_LEFT: 		k_left = false; 	break;
-      case typ.K_RIGHT: 	k_right = false; 	break;
-      case typ.K_UP: 		k_up = false; 		break;
-      case typ.K_DOWN: 		k_down = false; 	break;
-      case typ.K_CTRL:		k_shoot = false; 	break;
-    }
-    reset_k_direction();
+    injectKeyState(key, false);
   }
 
   /* INITIALISE AND RETURN INSTANCE */

@@ -66,12 +66,8 @@ function Player(x, y)
       || (sign(move.y()) != sign(facing.desired.y())))
       {
 	facing.desired.setXY(move.x(), move.y());
-	if(move.x() && move.y())
-	  facing.desired.normalise();
       }
 	
-
-       
       // accelerate
       speed.addXY(move.x()*typ.SPEED_DELTA*t_multiplier, 
 		  move.y()*typ.SPEED_DELTA*t_multiplier);
@@ -88,7 +84,6 @@ function Player(x, y)
     {
       var turn_dir = (facing.actual.det(facing.desired) > 0.0) ? 1 : -1
       facing.actual.addAngle(typ.TURN_SPEED*turn_dir);
-      console.log("turning");
     }
     
     // apply friction
