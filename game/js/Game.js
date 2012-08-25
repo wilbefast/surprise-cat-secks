@@ -53,6 +53,8 @@ function Game()
   // true attributes
   var things,		// list of dynamic game-objects
       player,		// the player-character object
+      k_left, k_right, 	// booleans for left and right arrow keys
+      k_up, key_down,	// booleans for up and down arrow keys
       k_direction,	// {x,y} reprenting direction pressed on key-pad
       k_shoot;		// boolean representing whether shoot key is pressed
       
@@ -131,56 +133,28 @@ function Game()
   {
     switch(key)
     {	  
-      case typ.K_LEFT:
-	k_direction.setX((k_direction.x() > 0) ? 0 : -1);
-      break;
-	
-      case typ.K_RIGHT:
-	k_direction.setX((k_direction.x() < 0) ? 0 : 1);
-      break;
-      
-      case typ.K_UP:
-	k_direction.setY((k_direction.y() > 0) ? 0 : -1);
-      break;
-	
-      case typ.K_DOWN:
-	k_direction.setY((k_direction.y() < 0) ? 0 : 1);
-      break;
-      
-      case typ.K_CTRL:
-	k_shoot = true;
-      break;
+      case typ.K_LEFT: 		k_left = true; 		break;
+      case typ.K_RIGHT: 	k_right = true; 	break;
+      case typ.K_UP: 		k_up = true; 		break;
+      case typ.K_DOWN: 		k_down = true; 		break;
+      case typ.K_CTRL:		k_shoot = true; 	break;
     }
+    k_direction.setX((k_left && !k_right) ? -1 : ((!k_left && k_right) ? 1 : 0));
+    k_direction.setY((k_up && !k_down) ? -1 : ((!k_up && k_down) ? 1 : 0));
   }
   
   obj.injectKeyUp = function(key)
   {
     switch(key)
     {	  
-      case typ.K_LEFT:
-	if((k_direction.x() < 0))
-	  k_direction.setX(0);
-      break;
-	
-      case typ.K_RIGHT:
-	if((k_direction.x() > 0))
-	  k_direction.setX(0);
-      break;
-      
-      case typ.K_UP:
-	if((k_direction.y() < 0))
-	  k_direction.setY(0);
-      break;
-	
-      case typ.K_DOWN:
-	if((k_direction.y() > 0))
-	  k_direction.setY(0);
-      break;
-      
-      case typ.K_CTRL:
-	k_shoot = false;
-      break;
+      case typ.K_LEFT: 		k_left = false; 	break;
+      case typ.K_RIGHT: 	k_right = false; 	break;
+      case typ.K_UP: 		k_up = false; 		break;
+      case typ.K_DOWN: 		k_down = false; 	break;
+      case typ.K_CTRL:		k_shoot = false; 	break;
     }
+    k_direction.setX((k_left && !k_right) ? -1 : ((!k_left && k_right) ? 1 : 0));
+    k_direction.setY((k_up && !k_down) ? -1 : ((!k_up && k_down) ? 1 : 0));
   }
 
   /* INITIALISE AND RETURN INSTANCE */
