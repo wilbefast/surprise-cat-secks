@@ -68,8 +68,7 @@ function Game()
     // object management
     things = new Array();
     // input handling
-    k_direction = new Object();
-    k_direction.x = k_direction.y = 0;
+    k_direction = new V2();
     k_shoot = false;
   }
   
@@ -133,19 +132,19 @@ function Game()
     switch(key)
     {	  
       case typ.K_LEFT:
-	k_direction.x = (k_direction.x > 0) ? 0 : -1;
+	k_direction.setX((k_direction.x() > 0) ? 0 : -1);
       break;
 	
       case typ.K_RIGHT:
-	k_direction.x = (k_direction.x < 0) ? 0 : 1;
+	k_direction.setX((k_direction.x() < 0) ? 0 : 1);
       break;
       
       case typ.K_UP:
-	k_direction.y = (k_direction.y > 0) ? 0 : -1;
+	k_direction.setY((k_direction.y() > 0) ? 0 : -1);
       break;
 	
       case typ.K_DOWN:
-	k_direction.y = (k_direction.y < 0) ? 0 : 1;
+	k_direction.setY((k_direction.y() < 0) ? 0 : 1);
       break;
       
       case typ.K_CTRL:
@@ -159,23 +158,23 @@ function Game()
     switch(key)
     {	  
       case typ.K_LEFT:
-	if((k_direction.x < 0))
-	  k_direction.x = 0;
+	if((k_direction.x() < 0))
+	  k_direction.setX(0);
       break;
 	
       case typ.K_RIGHT:
-	if((k_direction.x > 0))
-	  k_direction.x = 0;
+	if((k_direction.x() > 0))
+	  k_direction.setX(0);
       break;
       
       case typ.K_UP:
-	if((k_direction.y < 0))
-	  k_direction.y = 0;
+	if((k_direction.y() < 0))
+	  k_direction.setY(0);
       break;
 	
       case typ.K_DOWN:
-	if((k_direction.y > 0))
-	  k_direction.y = 0;
+	if((k_direction.y() > 0))
+	  k_direction.setY(0);
       break;
       
       case typ.K_CTRL:

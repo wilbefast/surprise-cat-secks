@@ -51,11 +51,10 @@ function Player(x, y)
   var reset = function()
   {
     // position
-    pos = new Object;
+    pos = new V2();
     // facing, straight down by default
-    facing = new Object;
-    facing.x = 0;
-    facing.y = -1;
+    facing = new V2();
+    facing.setXY(0, -1);
     // speed
     speed = new V2();
   }
@@ -63,15 +62,16 @@ function Player(x, y)
   var doMove = function(move, t_multiplier)
   {
     // apply move commands
-    if(move.x || move.y)
+    if(move.x() || move.y())
     {
       // reset facing
-      facing.x = move.x;
-      facing.y = move.y;
+      facing.setXY(move.x(), move.y());
+      if(move.x() && move.y())
+	facing.normalise();
       
       // accelerate
-      speed.addXY(move.x*typ.SPEED_DELTA*t_multiplier, 
-		  move.y*typ.SPEED_DELTA*t_multiplier);
+      speed.addXY(move.x()*typ.SPEED_DELTA*t_multiplier, 
+		  move.y()*typ.SPEED_DELTA*t_multiplier);
       
       // cap speed to terminal velocity
       if(speed.norm() > typ.SPEED_MAX)
@@ -84,8 +84,7 @@ function Player(x, y)
     
     
     // update position
-    pos.x += speed.x()*t_multiplier;
-    pos.y += speed.y()*t_multiplier;
+    pos.addXY(speed.x()*t_multiplier, speed.y()*t_multiplier);
   }
   
   var doShoot = function(shoot, t_multiplier)
@@ -103,12 +102,12 @@ function Player(x, y)
     
     // draw gun
     context.beginPath();
-    context.moveTo(pos.x, pos.y);
-    context.lineTo(pos.x + 24*facing.x, pos.y + 24*facing.y);
+    context.moveTo(pos.x(), pos.y());
+    context.lineTo(pos.x() + 24*facing.x(), pos.y() + 24*facing.y());
     context.stroke();
     
     // draw character
-    context.fillRect(pos.x-8, pos.y-8, 16, 16);
+    context.fillRect(pos.x()-8, pos.y()-8, 16, 16);
   }
   
   obj.update = function(game, t_multiplier)
@@ -119,7 +118,6 @@ function Player(x, y)
     
   /* INITIALISE AND RETURN INSTANCE */
   reset();
-  pos.x = x || 0.0;
-  pos.y = y || 0.0;
+  pos.setXY((x || 0.0), (y || 0.0));
   return obj;
 }
