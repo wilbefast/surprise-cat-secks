@@ -41,6 +41,7 @@ function Player(x, y)
   
   // true attributes
   var pos,	// {x,y} coordinates
+      facing,	// {x,y} between -1 and 1, representing aiming direction 
       speed;	// {x,y,norm,norm2, norm_inv} axial speeds, norm, norm squared 
 		// and inverted
       
@@ -49,8 +50,15 @@ function Player(x, y)
   */
   var reset = function()
   {
+    // position
     pos = new Object;
+    // facing, straight down by default
+    facing = new Object;
+    facing.x = 0;
+    facing.y = -1;
+    // speed
     speed = new Object;
+    speed.x = speed.y = speed.norm = speed.norm2 = speed.norm_inv = 0.0;
   }
   
   var recalculateSpeed = function()
@@ -75,23 +83,16 @@ function Player(x, y)
     // reset cache
     recalculateSpeed();
   }
- 
   
-  /* METHODS 
-    (obj.f = function(p1, ... ) { }
-  */
-  
-  obj.draw = function()
-  {
-    context.fillStyle = Game.C_TEXT;
-    context.fillRect(pos.x-8, pos.y-8, 16, 16);
-  }
-  
-  obj.update = function(move, shoot)
+  var doMove = function(move)
   {
     // apply move commands
     if(move.x || move.y)
     {
+      // reset facing
+      facing.x = move.x;
+      facing.y = move.y;
+      
       // accelerate
       speed.x += move.x*typ.SPEED_DELTA;
       speed.y += move.y*typ.SPEED_DELTA;
@@ -111,11 +112,39 @@ function Player(x, y)
     pos.x += speed.x;
     pos.y += speed.y;
   }
+  
+  var doShoot = function(shoot)
+  {
+  }
+ 
+  
+  /* METHODS 
+    (obj.f = function(p1, ... ) { }
+  */
+  
+  obj.draw = function()
+  {
+    context.fillStyle = Game.C_TEXT;
+    
+    // draw gun
+    context.beginPath();
+    context.moveTo(pos.x, pos.y);
+    context.lineTo(pos.x + 24*facing.x, pos.y + 24*facing.y);
+    context.stroke();
+    
+    // draw character
+    context.fillRect(pos.x-8, pos.y-8, 16, 16);
+  }
+  
+  obj.update = function(game)
+  {
+    doMove(game.getKDirection());
+    doShoot(game.isKShoot());
+  }
     
   /* INITIALISE AND RETURN INSTANCE */
   reset();
   pos.x = x || 0.0;
   pos.y = y || 0.0;
-  speed.x = speed.y = speed.norm = speed.norm2 = speed.norm_inv = 0.0;
   return obj;
 }

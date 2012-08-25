@@ -79,15 +79,15 @@ function main()
 
 canvas.onmousedown = function(event)
 {
-  Game.INSTANCE.injectMouseDown(event.layerX - canvas.offsetLeft,
-		      event.layerY - canvas.offsetTop);
+  /*Game.INSTANCE.injectMouseDown(event.layerX - canvas.offsetLeft,
+		      event.layerY - canvas.offsetTop);*/
   event.stopPropagation();
 }
 
 canvas.onmouseup = function(event)
 {
-  Game.INSTANCE.injectMouseUp(event.layerX - canvas.offsetLeft,
-		     event.layerY - canvas.offsetTop);
+  /*Game.INSTANCE.injectMouseUp(event.layerX - canvas.offsetLeft,
+		     event.layerY - canvas.offsetTop);*/
   event.stopPropagation();
 }
 

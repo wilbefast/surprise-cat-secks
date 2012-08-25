@@ -1,38 +1,12 @@
-/** @author William J.D. **/
-
-/*
-Generic javascript base-code for HTML5 games.
-Copyright (C) 2012 William James Dyce
-
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
-
-/* GLOBAL VARIABLES */
+/* RESOURCE MANAGEMENT */
 
 // DATA_LOCATION variable must be defined before this script is included!
 
-// html5 objects
-var canvas = document.getElementById('game_canvas');
-var context = canvas.getContext('2d');
-
-// the main application holder
-var game;
-
-/* RESOURCE MANAGEMENT */
-
+// global variables
 var total_to_load = 0;
 var left_to_load = 0;
+
+// utility functions
 var resourceLoaded = function()
 {
   // one less to wait for
@@ -40,6 +14,7 @@ var resourceLoaded = function()
     left_to_load--;
 }
 
+// generic resource-loading API
 function load_resource(resource_obj, file_name)
 {
   resource_obj.src = DATA_LOCATION + file_name;

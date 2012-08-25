@@ -52,7 +52,7 @@ function Game()
   var obj = this, typ = Game;
   
   // true attributes
-  var monkeys,		// list of dynamic game-objects
+  var things,		// list of dynamic game-objects
       player,		// the player-character object
       k_direction,	// {x,y} reprenting direction pressed on key-pad
       k_shoot;		// boolean representing whether shoot key is pressed
@@ -67,7 +67,7 @@ function Game()
     // player character
     player = new Player(canvas.width/2, canvas.height/2);
     // object management
-    monkeys = new Array();
+    things = new Array();
     // input handling
     k_direction = new Object();
     k_direction.x = k_direction.y = 0;
@@ -75,18 +75,18 @@ function Game()
   }
   
   // update dynamic objects (a variable number stored in an array)
-  var updateMonkeys = function()
+  var updateThings = function()
   {
     // array of indexes of objects to be deleted
     var cleanUp = new Array();
-    for(i = 0; i < monkeys.length; i++)
+    for(i = 0; i < things.length; i++)
     {
       // update objects, save update result
-      var deleteObject = (objects[i] == null || monkeys[i].update());
+      var deleteThing = (objects[i] == null || things[i].update(this));
       // delete object if the update returns true
-      if(deleteObject)
+      if(deleteThing)
       {
-	monkeys[i] = null;
+	things[i] = null;
 	// add to cleanup list ;)
 	cleanUp.push(i);
       }
@@ -97,17 +97,21 @@ function Game()
     }
     // delete the indices in the cleanup list
     for(i=0; i < cleanUp.length; i++)
-      monkeys.splice(cleanUp[i], 1);
+      things.splice(cleanUp[i], 1);
   }
   
   /* METHODS 
     (obj.f = function(p1, ... ) { }
   */
+  
+  obj.getKDirection = function() { return k_direction; }
+  obj.isKShoot = function() { return k_shoot; }
+  
   obj.injectUpdate = function()
   {
     // update objects
-    updateMonkeys();
-    player.update(k_direction, k_shoot);
+    updateThings();
+    player.update(this);
   }
  
   obj.injectDraw = function()
