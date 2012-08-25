@@ -41,7 +41,7 @@ function V2(init_x, init_y)
   var recalculateNorm = function()
   {
     // values are cached to avoid calculating too many inverses and square-roots
-    speed.norm = Math.sqrt(Math.pow(speed.x, 2) + Math.pow(speed.y, 2));
+    norm = Math.sqrt(x*x + y*y);
   }
     
     
@@ -52,6 +52,7 @@ function V2(init_x, init_y)
   // getters
   obj.x = function() { return x; }
   obj.y = function() { return y; }
+  
   obj.norm = function()
   {
     if(norm < 0)
@@ -76,20 +77,45 @@ function V2(init_x, init_y)
     y = new_y;
     norm = -1.0;
   }
+  
   obj.setNorm = function(new_norm)
   {
-    obj.normalise();
-    x *= new_norm;
-    y *= new_norm;
-    norm = new_norm;
+    if(new_norm < 0.0)
+      x = y = norm = 0.0;
+    else
+    {
+      obj.normalise();
+      x *= new_norm;
+      y *= new_norm;
+      norm = new_norm;
+    }
   }
   
   // modification
+  obj.addX = function(amount)
+  {
+    obj.setX(x + amount);
+  }
+  obj.addY = function(amount)
+  {
+    obj.setY(y + amount);
+  }
+  obj.addXY = function(amount_x, amount_y)
+  {
+    obj.setXY(x + amount_x, y + amount_y);
+  }
+  
+  obj.addNorm = function(amount)
+  {
+    obj.setNorm(norm + amount);
+  }
+  
   obj.normalise = function()
   {
     if(norm < 0)
       recalculateNorm();
     
+    var norm_inv = 1.0 / norm;
     x *= norm_inv;
     y *= norm_inv;
     

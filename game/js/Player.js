@@ -57,31 +57,7 @@ function Player(x, y)
     facing.x = 0;
     facing.y = -1;
     // speed
-    speed = new Object;
-    speed.x = speed.y = speed.norm = speed.norm2 = speed.norm_inv = 0.0;
-  }
-  
-  var recalculateSpeed = function()
-  {
-    // values are cached to avoid calculating too many inverses and square-roots
-    speed.norm2 = Math.pow(speed.x, 2) + Math.pow(speed.y, 2);
-    speed.norm = Math.sqrt(speed.norm2);
-    speed.norm_inv = 1.0 / speed.norm;
-  }
-  
-  var setSpeed = function(new_speed)
-  {
-    // shortcut for setting speed to 0
-    if(new_speed <= 0.0)
-      speed.x = speed.y = speed.norm = speed.norm2 = speed.norm_inv = 0.0;
-    
-    // change speed
-    var multiplier = speed.norm_inv * new_speed;
-    speed.x *= multiplier;
-    speed.y *= multiplier;
-    
-    // reset cache
-    recalculateSpeed();
+    speed = new V2();
   }
   
   var doMove = function(move)
@@ -94,23 +70,21 @@ function Player(x, y)
       facing.y = move.y;
       
       // accelerate
-      speed.x += move.x*typ.SPEED_DELTA;
-      speed.y += move.y*typ.SPEED_DELTA;
-      recalculateSpeed();
+      speed.addXY(move.x*typ.SPEED_DELTA, move.y*typ.SPEED_DELTA);
       
       // cap speed to terminal velocity
-      if(speed.norm > typ.SPEED_MAX)
-	setSpeed(typ.SPEED_MAX);
+      if(speed.norm() > typ.SPEED_MAX)
+	speed.setNorm(typ.SPEED_MAX);
     }
     
     // apply friction
-    if(speed.x || speed.y)
-      setSpeed(speed.norm - typ.FRICTION);
+    if(speed.x() || speed.y())
+      speed.addNorm(-typ.FRICTION);
     
     
     // update position
-    pos.x += speed.x;
-    pos.y += speed.y;
+    pos.x += speed.x();
+    pos.y += speed.y();
   }
   
   var doShoot = function(shoot)
