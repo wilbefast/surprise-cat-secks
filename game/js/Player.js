@@ -91,15 +91,15 @@ function Player(x, y)
     pos.addXY(speed.x()*t_multiplier, speed.y()*t_multiplier);
     
     // lap around 
-    if(pos.x() > canvas.width + Player.HALF_SIZE)
-      pos.addX(-canvas.width - Player.HALF_SIZE );
-    else if(pos.x() < -Player.HALF_SIZE)
-      pos.addX(canvas.width + Player.HALF_SIZE);
+    if(pos.x() > canvas.width + typ.HALF_SIZE)
+      pos.addX(-canvas.width - typ.HALF_SIZE );
+    else if(pos.x() < -typ.HALF_SIZE)
+      pos.addX(canvas.width + typ.HALF_SIZE);
     
-    if(pos.y() > canvas.height + Player.HALF_SIZE)
-      pos.addY(-canvas.height - Player.HALF_SIZE );
-    else if(pos.y() < -Player.HALF_SIZE)
-      pos.addY(canvas.height + Player.HALF_SIZE);
+    if(pos.y() > canvas.height + typ.HALF_SIZE)
+      pos.addY(-canvas.height - typ.HALF_SIZE );
+    else if(pos.y() < -typ.HALF_SIZE)
+      pos.addY(canvas.height + typ.HALF_SIZE);
     
   }
   
@@ -119,13 +119,13 @@ function Player(x, y)
     // draw gun
     context.beginPath();
     context.moveTo(pos.x(), pos.y());
-    context.lineTo(pos.x() + Player.GUN_LENGTH*facing.x(), 
-		   pos.y() + Player.GUN_LENGTH*facing.y());
+    context.lineTo(pos.x() + typ.GUN_LENGTH*facing.x(), 
+		   pos.y() + typ.GUN_LENGTH*facing.y());
     context.stroke();
     
     // draw character
-    context.fillRect(pos.x()-Player.HALF_SIZE, pos.y()-Player.HALF_SIZE, 
-		      Player.SIZE, Player.SIZE);
+    context.fillRect(pos.x()-typ.HALF_SIZE, pos.y()-typ.HALF_SIZE, 
+		      typ.SIZE, typ.SIZE);
   }
   
   obj.update = function(game, t_multiplier)

@@ -71,7 +71,7 @@ function Game()
     things = new Array();
     // input handling
     k_direction = new V2();
-    k_shoot = false;
+    key_left = k_right = k_up = k_down = k_shoot = false;
   }
   
   // update dynamic objects (a variable number stored in an array)
@@ -99,6 +99,13 @@ function Game()
     // delete the indices in the cleanup list
     for(i=0; i < cleanUp.length; i++)
       things.splice(cleanUp[i], 1);
+  }
+  
+  var reset_k_direction = function()
+  {
+    k_direction.setX((k_left && !k_right) ? -1 : ((!k_left && k_right) ? 1 : 0));
+    k_direction.setY((k_up && !k_down) ? -1 : ((!k_up && k_down) ? 1 : 0));
+    k_direction.normalise();
   }
   
   /* METHODS 
@@ -139,8 +146,7 @@ function Game()
       case typ.K_DOWN: 		k_down = true; 		break;
       case typ.K_CTRL:		k_shoot = true; 	break;
     }
-    k_direction.setX((k_left && !k_right) ? -1 : ((!k_left && k_right) ? 1 : 0));
-    k_direction.setY((k_up && !k_down) ? -1 : ((!k_up && k_down) ? 1 : 0));
+    reset_k_direction();
   }
   
   obj.injectKeyUp = function(key)
@@ -153,8 +159,7 @@ function Game()
       case typ.K_DOWN: 		k_down = false; 	break;
       case typ.K_CTRL:		k_shoot = false; 	break;
     }
-    k_direction.setX((k_left && !k_right) ? -1 : ((!k_left && k_right) ? 1 : 0));
-    k_direction.setY((k_up && !k_down) ? -1 : ((!k_up && k_down) ? 1 : 0));
+    reset_k_direction();
   }
 
   /* INITIALISE AND RETURN INSTANCE */
