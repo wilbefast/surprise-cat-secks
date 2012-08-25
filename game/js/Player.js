@@ -31,7 +31,8 @@ Player.SPEED_DELTA = Player.SPEED_MAX / 8.0;
 Player.SPEED_MAX_2 = Math.pow(Player.SPEED_MAX, 2);
 Player.SPEED_MAX_INV = 1.0 / Player.SPEED_MAX;
 Player.FRICTION = Player.SPEED_MAX / 16.0;
-Player.TURN_SPEED = 0.04;
+Player.TURN_SPEED = 0.05;
+Player.FACING_CHANGE_TIME = 5;
 // weapons
 Player.RELOAD_TIME = 21;
 
@@ -56,16 +57,26 @@ function Player(x, y)
     var f = function(p1, ... ) { } 
   */
 
-  var doMove = function(move, t_multiplier)
+  var doMove = function(move, shoot, t_multiplier)
   {
     // apply move commands
     if(move.x() || move.y())
     {
       // reset desired facing
-      if((sign(move.x()) != sign(facing.desired.x())) 
-      || (sign(move.y()) != sign(facing.desired.y())))
+      if(!shoot 
+      && (move.x() != facing.desired.x() || move.y() != facing.desired.y()))
       {
-	facing.desired.setXY(move.x(), move.y());
+	// don't change direction immediately or we'll never face diagonals
+	if(facing.change_timer == 0)
+	{
+	  // change direction
+	  facing.desired.setXY(move.x(), move.y());
+	  // reset direction-change timer
+	  facing.change_timer = typ.FACING_CHANGE_TIME;
+	}
+	else
+	  // count down till direction change
+	  facing.change_timer--;
       }
 	
       // accelerate
@@ -76,6 +87,9 @@ function Player(x, y)
       if(speed.norm() > typ.SPEED_MAX)
 	speed.setNorm(typ.SPEED_MAX);
     }
+    else
+      // reset direction-change timer
+      facing.change_timer = typ.FACING_CHANGE_TIME;
     
     // interpolate aqual angle towards desired angle
     if(facing.actual.dist2(facing.desired) < 0.01)
@@ -133,7 +147,7 @@ function Player(x, y)
   
   obj.update = function(game, t_multiplier)
   {
-    doMove(game.getKDirection(), t_multiplier);
+    doMove(game.getKDirection(), game.isKShoot(), t_multiplier);
     doShoot(game.isKShoot(), t_multiplier);
   }
     
