@@ -21,7 +21,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 /*** PLAYER CHARACTER CLASS CLASS ***/
 
 /// CLASS VARIABLES/CONSTANTS
-
+// size
+Player.SIZE = 16;
+Player.HALF_SIZE = Player.SIZE / 2;
+Player.GUN_LENGTH = Player.SIZE * 1.5;
+// speed
 Player.SPEED_MAX = 1.9;
 Player.SPEED_DELTA = Player.SPEED_MAX / 8.0;
 Player.SPEED_MAX_2 = Math.pow(Player.SPEED_MAX, 2);
@@ -85,6 +89,18 @@ function Player(x, y)
     
     // update position
     pos.addXY(speed.x()*t_multiplier, speed.y()*t_multiplier);
+    
+    // lap around 
+    if(pos.x() > canvas.width + Player.HALF_SIZE)
+      pos.addX(-canvas.width - Player.HALF_SIZE );
+    else if(pos.x() < -Player.HALF_SIZE)
+      pos.addX(canvas.width + Player.HALF_SIZE);
+    
+    if(pos.y() > canvas.height + Player.HALF_SIZE)
+      pos.addY(-canvas.height - Player.HALF_SIZE );
+    else if(pos.y() < -Player.HALF_SIZE)
+      pos.addY(canvas.height + Player.HALF_SIZE);
+    
   }
   
   var doShoot = function(shoot, t_multiplier)
@@ -103,11 +119,13 @@ function Player(x, y)
     // draw gun
     context.beginPath();
     context.moveTo(pos.x(), pos.y());
-    context.lineTo(pos.x() + 24*facing.x(), pos.y() + 24*facing.y());
+    context.lineTo(pos.x() + Player.GUN_LENGTH*facing.x(), 
+		   pos.y() + Player.GUN_LENGTH*facing.y());
     context.stroke();
     
     // draw character
-    context.fillRect(pos.x()-8, pos.y()-8, 16, 16);
+    context.fillRect(pos.x()-Player.HALF_SIZE, pos.y()-Player.HALF_SIZE, 
+		      Player.SIZE, Player.SIZE);
   }
   
   obj.update = function(game, t_multiplier)
