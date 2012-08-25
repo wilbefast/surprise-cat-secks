@@ -26,9 +26,8 @@ Game.INSTANCE = null;
 // strings
 Game.TITLE = "Black Dog";
 Game.AUTHOR = "By William 'wilbefast' J.D.";
-// timing: frames and updates per second
-Game.MAX_FPS = 30;
-Game.MAX_UPS = 30;
+// timing: maximum number of frames per second
+Game.MAX_FPS = 60;
 // colours
 Game.C_BACKGROUND = 'rgb(255, 0, 0)';
 Game.C_TEXT = 'rgb(0, 0, 128)';
@@ -75,14 +74,15 @@ function Game()
   }
   
   // update dynamic objects (a variable number stored in an array)
-  var updateThings = function()
+  var updateThings = function(t_multiplier)
   {
     // array of indexes of objects to be deleted
     var cleanUp = new Array();
     for(i = 0; i < things.length; i++)
     {
       // update objects, save update result
-      var deleteThing = (objects[i] == null || things[i].update(this));
+      var deleteThing 
+		= (objects[i] == null || things[i].update(this, t_multiplier));
       // delete object if the update returns true
       if(deleteThing)
       {
@@ -107,11 +107,11 @@ function Game()
   obj.getKDirection = function() { return k_direction; }
   obj.isKShoot = function() { return k_shoot; }
   
-  obj.injectUpdate = function()
+  obj.injectUpdate = function(t_multiplier)
   {
     // update objects
-    updateThings();
-    player.update(this);
+    updateThings(t_multiplier);
+    player.update(this, t_multiplier);
   }
  
   obj.injectDraw = function()

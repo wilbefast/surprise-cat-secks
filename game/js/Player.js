@@ -22,7 +22,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 /// CLASS VARIABLES/CONSTANTS
 
-Player.SPEED_MAX = 3.0;
+Player.SPEED_MAX = 1.9;
 Player.SPEED_DELTA = Player.SPEED_MAX / 8.0;
 Player.SPEED_MAX_2 = Math.pow(Player.SPEED_MAX, 2);
 Player.SPEED_MAX_INV = 1.0 / Player.SPEED_MAX;
@@ -60,7 +60,7 @@ function Player(x, y)
     speed = new V2();
   }
   
-  var doMove = function(move)
+  var doMove = function(move, t_multiplier)
   {
     // apply move commands
     if(move.x || move.y)
@@ -70,7 +70,8 @@ function Player(x, y)
       facing.y = move.y;
       
       // accelerate
-      speed.addXY(move.x*typ.SPEED_DELTA, move.y*typ.SPEED_DELTA);
+      speed.addXY(move.x*typ.SPEED_DELTA*t_multiplier, 
+		  move.y*typ.SPEED_DELTA*t_multiplier);
       
       // cap speed to terminal velocity
       if(speed.norm() > typ.SPEED_MAX)
@@ -83,11 +84,11 @@ function Player(x, y)
     
     
     // update position
-    pos.x += speed.x();
-    pos.y += speed.y();
+    pos.x += speed.x()*t_multiplier;
+    pos.y += speed.y()*t_multiplier;
   }
   
-  var doShoot = function(shoot)
+  var doShoot = function(shoot, t_multiplier)
   {
   }
  
@@ -110,10 +111,10 @@ function Player(x, y)
     context.fillRect(pos.x-8, pos.y-8, 16, 16);
   }
   
-  obj.update = function(game)
+  obj.update = function(game, t_multiplier)
   {
-    doMove(game.getKDirection());
-    doShoot(game.isKShoot());
+    doMove(game.getKDirection(), t_multiplier);
+    doShoot(game.isKShoot(), t_multiplier);
   }
     
   /* INITIALISE AND RETURN INSTANCE */

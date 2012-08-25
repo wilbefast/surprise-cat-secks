@@ -18,22 +18,40 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+var next_tick = 0, missed_ticks = 0, this_tick = 0;
+
+function wait(f)
+{
+  // Get the current time-stamp
+  var date = new Date();
+  this_tick = date.getTime();
+
+  // If it's not yet time for the next update, wait a while
+  if (this_tick < next_tick)
+  {
+    setTimeout(f, next_tick - this_tick);
+    missed_ticks = 0;
+  }
+  else
+  {
+    setTimeout(f, 0);
+    missed_ticks = this_tick - next_tick;
+  }
+
+  // Calculate when the next update should be
+  next_tick = this_tick + (1000 / Game.MAX_FPS);
+}
+
 function update_loop()
 {
   // update the Game
-  Game.INSTANCE.injectUpdate();
+  Game.INSTANCE.injectUpdate(1.0 + missed_ticks/1000.0*Game.MAX_FPS);
   
-  // repeat this function after a short delay
-  setTimeout(update_loop, 1000 / Game.MAX_UPS);
-}
-
-function draw_loop()
-{
-  // update the Game
+  // redraw the Game
   Game.INSTANCE.injectDraw();
   
   // repeat this function after a short delay
-  setTimeout(draw_loop, 1000 / Game.MAX_FPS);
+  wait(update_loop);
 }
 
 function loading_screen()
@@ -61,7 +79,6 @@ function loading_screen()
   {
     // create the game object
     Game.INSTANCE = new Game();
-    draw_loop();
     update_loop();
   }
     
