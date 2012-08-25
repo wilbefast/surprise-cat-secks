@@ -22,10 +22,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 /// CLASS VARIABLES/CONSTANTS
 
-Player.SPEED_DELTA = 0.6;
-Player.SPEED_MAX = 2.0;
+Player.SPEED_MAX = 3.0;
+Player.SPEED_DELTA = Player.SPEED_MAX / 8.0;
 Player.SPEED_MAX_2 = Math.pow(Player.SPEED_MAX, 2);
 Player.SPEED_MAX_INV = 1.0 / Player.SPEED_MAX;
+Player.FRICTION = Player.SPEED_MAX / 16.0;
 
 /// INSTANCE ATTRIBUTES/METHODS
 
@@ -52,6 +53,30 @@ function Player(x, y)
     speed = new Object;
   }
   
+  var recalculateSpeed = function()
+  {
+    // values are cached to avoid calculating too many inverses and square-roots
+    speed.norm2 = Math.pow(speed.x, 2) + Math.pow(speed.y, 2);
+    speed.norm = Math.sqrt(speed.norm2);
+    speed.norm_inv = 1.0 / speed.norm;
+  }
+  
+  var setSpeed = function(new_speed)
+  {
+    // shortcut for setting speed to 0
+    if(new_speed <= 0.0)
+      speed.x = speed.y = speed.norm = speed.norm2 = speed.norm_inv = 0.0;
+    
+    // change speed
+    var multiplier = speed.norm_inv * new_speed;
+    speed.x *= multiplier;
+    speed.y *= multiplier;
+    
+    // reset cache
+    recalculateSpeed();
+  }
+ 
+  
   /* METHODS 
     (obj.f = function(p1, ... ) { }
   */
@@ -70,62 +95,17 @@ function Player(x, y)
       // accelerate
       speed.x += move.x*typ.SPEED_DELTA;
       speed.y += move.y*typ.SPEED_DELTA;
-      speed.norm2 = Math.pow(speed.x, 2) + Math.pow(speed.y, 2);
+      recalculateSpeed();
       
       // cap speed to terminal velocity
-      if(speed.norm2 > typ.SPEED_MAX_2)
-      {
-	// NB - multiplications cost less than divisions
-	speed.norm_inv = 1.0 / Math.sqrt(speed.norm2);
-	speed.x *= speed.norm_inv;
-	speed.y *= speed.norm_inv;
-	
-	// reset the cache values
-	speed.norm = typ.SPEED_MAX;
-	speed.norm2 = typ.SPEED_MAX_2;
-	speed.norm_inv = typ.SPEED_MAX_INV;
-      }
+      if(speed.norm > typ.SPEED_MAX)
+	setSpeed(typ.SPEED_MAX);
     }
     
     // apply friction
-    if(speed.x > 0.0 && move.x <= 0)
-    {
-      if(speed.x > typ.FRICTION)
-	speed.x -= typ.FRICTION;
-      else
-	speed.x = 0.0;
-    }
-    else if(speed.x < 0.0 && move.x >= 0)
-    {
-      if(speed.x < -typ.FRICTION)
-	speed.x += typ.FRICTION;
-      else
-	speed.x = 0.0;
-    }
-    if(speed.y > 0.0 && move.y <= 0)
-    {
-      if(speed.y > typ.FRICTION)
-	speed.y -= typ.FRICTION;
-      else
-	speed.y = 0.0;
-    }
-    else if(speed.y < 0.0 && move.y >= 0)
-    {
-      if(speed.y < -typ.FRICTION)
-	speed.y += typ.FRICTION;
-      else
-	speed.y = 0.0;
-    }
+    if(speed.x || speed.y)
+      setSpeed(speed.norm - typ.FRICTION);
     
-    
-    
-    if(speed.y < 0.0 && move.y >= 0)
-    {
-      if(speed.y < -typ.FRICTION)
-	speed.y += typ.FRICTION;
-      else
-	speed.y = 0.0;
-    }
     
     // update position
     pos.x += speed.x;
