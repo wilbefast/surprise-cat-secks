@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="author" content="William Dyce">
+    <link rel="stylesheet" type="text/css" href="../site/main.css" />
+    <link rel="shortcut icon" href="../site/favicon.gif" />
+    <title>Game</title>
+  </head>
+
+  <!-- scripts will use the canvas, so declare it before including them -->
+  <body>
+    <canvas width="640" height="480" id='game_canvas'>
+      Can't load HTML 5 canvas: is your browser up to date?
+    </canvas>
+  </body>
+
+  <!-- definition may vary depending on where your game is hosted -->
+  <script type="text/javascript">var DATA_LOCATION = "data/";</script>
+
+  <!-- include your scripts in the order they will be executed -->
+  <script type="text/javascript" src="init.js"></script>
+  <script type="text/javascript" src="Player.js"></script>
+  <script type="text/javascript" src="Game.js"></script>
+  <script type="text/javascript" src="main.js"></script>
+
+</html>
