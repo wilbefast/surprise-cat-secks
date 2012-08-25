@@ -1,7 +1,7 @@
 /** @author William J.D. **/
 
 /*
-Generic javascript base-code for HTML5 games.
+Kitten-burning game made for Ludum Dare #24 ("Evolution").
 Copyright (C) 2012 William James Dyce
 
 This program is free software: you can redistribute it and/or modify
@@ -18,13 +18,22 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-function main_loop()
+function update_loop()
 {
   // update the Game
   Game.INSTANCE.injectUpdate();
   
   // repeat this function after a short delay
-  setTimeout(main_loop, 1000 / Game.MAX_FPS);
+  setTimeout(update_loop, 1000 / Game.MAX_UPS);
+}
+
+function draw_loop()
+{
+  // update the Game
+  Game.INSTANCE.injectDraw();
+  
+  // repeat this function after a short delay
+  setTimeout(draw_loop, 1000 / Game.MAX_FPS);
 }
 
 function loading_screen()
@@ -52,7 +61,8 @@ function loading_screen()
   {
     // create the game object
     Game.INSTANCE = new Game();
-    main_loop();
+    draw_loop();
+    update_loop();
   }
     
 }

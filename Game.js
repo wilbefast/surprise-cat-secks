@@ -1,7 +1,7 @@
 /** @author William J. Dyce */
 
 /*
-Generic javascript base-code for HTML5 games.
+Kitten-burning game made for Ludum Dare #24 ("Evolution").
 Copyright (C) 2012 William James Dyce
 
 This program is free software: you can redistribute it and/or modify
@@ -26,8 +26,9 @@ Game.INSTANCE = null;
 // strings
 Game.TITLE = "Black Dog";
 Game.AUTHOR = "By William 'wilbefast' J.D.";
-// maximum frames per second
+// timing: frames and updates per second
 Game.MAX_FPS = 30;
+Game.MAX_UPS = 30;
 // colours
 Game.C_BACKGROUND = 'rgb(255, 0, 0)';
 Game.C_TEXT = 'rgb(0, 0, 128)';
@@ -43,131 +44,143 @@ Game.K_SPACE = 32;
 /// INSTANCE ATTRIBUTES/METHODS
 function Game()
 {
-    /* ATTRIBUTES 
-      var a = x; 
-    */
-    
-    // receiver 
-    var obj = this, typ = Game;
-    
-    // true attributes
-    var monkeys,	// list of dynamic game-objects
-	k_direction;	// [x,y] reprenting direction pressed on key-pad
-	
-    /* SUBROUTINES 
-      var f = function(p1, ... ) { } 
-    */
-    
-    // reset the game to its initial state
-    var reset = function()
+  /* ATTRIBUTES 
+    var a = x; 
+  */
+  
+  // receiver 
+  var obj = this, typ = Game;
+  
+  // true attributes
+  var monkeys,		// list of dynamic game-objects
+      player,		// the player-character object
+      k_direction,	// {x,y} reprenting direction pressed on key-pad
+      k_shoot;		// boolean representing whether shoot key is pressed
+      
+  /* SUBROUTINES 
+    var f = function(p1, ... ) { } 
+  */
+  
+  // reset the game to its initial state
+  var reset = function()
+  {
+    // player character
+    player = new Player(canvas.width/2, canvas.height/2);
+    // object management
+    monkeys = new Array();
+    // input handling
+    k_direction = new Object();
+    k_direction.x = k_direction.y = 0;
+    k_shoot = false;
+  }
+  
+  // update dynamic objects (a variable number stored in an array)
+  var updateMonkeys = function()
+  {
+    // array of indexes of objects to be deleted
+    var cleanUp = new Array();
+    for(i = 0; i < monkeys.length; i++)
     {
-      // initialise attributes
-      monkeys = new Array();
-      k_direction = new Array();
-      k_direction[0] = k_direction[1] = 0;
-    }
-    
-    // update dynamic objects (a variable number stored in an array)
-    var updateMonkeys = function()
-    {
-      // array of indexes of objects to be deleted
-      var cleanUp = new Array();
-      for(i = 0; i < monkeys.length; i++)
+      // update objects, save update result
+      var deleteObject = (objects[i] == null || monkeys[i].update());
+      // delete object if the update returns true
+      if(deleteObject)
       {
-	// update objects, save update result
-	var deleteObject = (objects[i] == null || monkeys[i].update());
-	// delete object if the update returns true
-	if(deleteObject)
-	{
-	  monkeys[i] = null;
-	  // add to cleanup list ;)
-	  cleanUp.push(i);
-	}
-	else
-	{
-	}
+	monkeys[i] = null;
+	// add to cleanup list ;)
+	cleanUp.push(i);
       }
-      // delete the indices in the cleanup list
-      for(i=0; i < cleanUp.length; i++)
-	monkeys.splice(cleanUp[i], 1);
+      else
+      {
+	// generate events for this object
+      }
     }
+    // delete the indices in the cleanup list
+    for(i=0; i < cleanUp.length; i++)
+      monkeys.splice(cleanUp[i], 1);
+  }
+  
+  /* METHODS 
+    (obj.f = function(p1, ... ) { }
+  */
+  obj.injectUpdate = function()
+  {
+    // update objects
+    updateMonkeys();
+    player.update(k_direction, k_shoot);
+  }
+ 
+  obj.injectDraw = function()
+  {  
+    // clear canvas
+    context.fillStyle = Game.C_BACKGROUND;
+    context.fillRect(0,0,canvas.width, canvas.height);
     
-    /* METHODS 
-      (obj.f = function(p1, ... ) { }
-    */
-    obj.injectUpdate = function()
-    {
-      // your code here
-    }
-    
-    obj.injectDraw = function()
-    {
-      // your code here
-    }
-    
-    obj.injectMouseDown = function(x, y)
-    {
-      // your code here
-    }
-    
-    obj.injectMouseUp = function(x, y)
-    {
-      // your code here
-    }
-    
-    obj.injectKeyDown = function(key)
-    {
-      switch(key)
-      {	  
-	case typ.K_LEFT:
-	  k_direction[0] = (k_direction[0] > 0) ? 0 : -1;
-	break;
-	  
-	case typ.K_RIGHT:
-	  k_direction[0] = (k_direction[0] < 0) ? 0 : 1;
-	break;
+    // draw objects
+    player.draw();
+  }
+  
+  obj.injectMouseDown = function(x, y) { /* not used */ }
+  
+  obj.injectMouseUp = function(x, y) { /* not used*/ }
+  
+  obj.injectKeyDown = function(key)
+  {
+    switch(key)
+    {	  
+      case typ.K_LEFT:
+	k_direction.x = (k_direction.x > 0) ? 0 : -1;
+      break;
 	
-	case typ.K_UP:
-	  k_direction[1] = (k_direction[1] > 0) ? 0 : -1;
-	break;
-	  
-	case typ.K_DOWN:
-	  k_direction[1] = (k_direction[1] < 0) ? 0 : 1;
-	break;
-      }
+      case typ.K_RIGHT:
+	k_direction.x = (k_direction.x < 0) ? 0 : 1;
+      break;
       
-      console.log(k_direction[0] + "," + k_direction[1]);
-    }
-    
-    obj.injectKeyUp = function(key)
-    {
-      switch(key)
-      {	  
-	case typ.K_LEFT:
-	  if((k_direction[0] < 0))
-	    k_direction[0] = 0;
-	break;
-	  
-	case typ.K_RIGHT:
-	  if((k_direction[0] > 0))
-	    k_direction[0] = 0;
-	break;
+      case typ.K_UP:
+	k_direction.y = (k_direction.y > 0) ? 0 : -1;
+      break;
 	
-	case typ.K_UP:
-	  if((k_direction[1] < 0))
-	    k_direction[1] = 0;
-	break;
-	  
-	case typ.K_DOWN:
-	  if((k_direction[1] > 0))
-	    k_direction[1] = 0;
-	break;
-      }
+      case typ.K_DOWN:
+	k_direction.y = (k_direction.y < 0) ? 0 : 1;
+      break;
       
-      console.log(k_direction[0] + "," + k_direction[1]);
+      case typ.K_CTRL:
+	k_shoot = true;
+      break;
     }
+  }
+  
+  obj.injectKeyUp = function(key)
+  {
+    switch(key)
+    {	  
+      case typ.K_LEFT:
+	if((k_direction.x < 0))
+	  k_direction.x = 0;
+      break;
+	
+      case typ.K_RIGHT:
+	if((k_direction.x > 0))
+	  k_direction.x = 0;
+      break;
+      
+      case typ.K_UP:
+	if((k_direction.y < 0))
+	  k_direction.y = 0;
+      break;
+	
+      case typ.K_DOWN:
+	if((k_direction.y > 0))
+	  k_direction.y = 0;
+      break;
+      
+      case typ.K_CTRL:
+	k_shoot = false;
+      break;
+    }
+  }
 
-    /* INITIALISE AND RETURN INSTANCE */
-    reset();
-    return obj;
+  /* INITIALISE AND RETURN INSTANCE */
+  reset();
+  return obj;
 }
