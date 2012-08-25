@@ -49,9 +49,17 @@ function V2(init_x, init_y)
   (obj.f = function(p1, ... ) { }
   */
   
-  // getters and setters
+  // getters
   obj.x = function() { return x; }
   obj.y = function() { return y; }
+  obj.norm = function()
+  {
+    if(norm < 0)
+      recalculateNorm();
+    return norm;
+  }
+  
+  // setters
   obj.setX = function(new_x)
   {
     x = new_x;
@@ -68,14 +76,15 @@ function V2(init_x, init_y)
     y = new_y;
     norm = -1.0;
   }
-
-  obj.norm = function()
+  obj.setNorm = function(new_norm)
   {
-    if(norm < 0)
-      recalculateNorm();
-    return norm;
+    obj.normalise();
+    x *= new_norm;
+    y *= new_norm;
+    norm = new_norm;
   }
   
+  // modification
   obj.normalise = function()
   {
     if(norm < 0)
