@@ -31,6 +31,9 @@ Player.SPEED_DELTA = Player.SPEED_MAX / 8.0;
 Player.SPEED_MAX_2 = Math.pow(Player.SPEED_MAX, 2);
 Player.SPEED_MAX_INV = 1.0 / Player.SPEED_MAX;
 Player.FRICTION = Player.SPEED_MAX / 16.0;
+Player.TURN_SPEED = 0.01;
+// weapons
+Player.RELOAD_TIME = 21;
 
 /// INSTANCE ATTRIBUTES/METHODS
 
@@ -44,25 +47,16 @@ function Player(x, y)
   var obj = this, typ = Player;
   
   // true attributes
-  var pos,	// {x,y} coordinates
-      facing,	// {x,y} between -1 and 1, representing aiming direction 
-      speed;	// {x,y,norm,norm2, norm_inv} axial speeds, norm, norm squared 
-		// and inverted
+  var pos,		// V2: position
+      facing,		// V2: normalised, representing DESIRED direction
+      facing_angle,	// real: representing ACTUAL direction
+      speed,		// V2: vertical and horizontal speed
+      reloading;	// real: updates till gun is reloaded
       
   /* SUBROUTINES 
     var f = function(p1, ... ) { } 
   */
-  var reset = function()
-  {
-    // position
-    pos = new V2();
-    // facing, straight down by default
-    facing = new V2();
-    facing.setXY(0, -1);
-    // speed
-    speed = new V2();
-  }
-  
+
   var doMove = function(move, t_multiplier)
   {
     // apply move commands
@@ -105,6 +99,16 @@ function Player(x, y)
   
   var doShoot = function(shoot, t_multiplier)
   {
+    if(shoot)
+    {
+      if(reloading > 0.0)
+	reloading -= t_multiplier;
+      else
+      {
+	Game.INSTANCE.addThing(new Spray(pos, facing, speed));
+	reloading = typ.RELOAD_TIME;
+      }
+    }
   }
  
   
@@ -134,8 +138,19 @@ function Player(x, y)
     doShoot(game.isKShoot(), t_multiplier);
   }
     
-  /* INITIALISE AND RETURN INSTANCE */
-  reset();
+  /* INITIALISE */
+  
+  // position
+  pos = new V2();
+  // facing, straight down by default
+  facing = new V2();
+  facing.setXY(0, -1);
+  // speed
+  speed = new V2();
   pos.setXY((x || 0.0), (y || 0.0));
+  // weapons
+  reloading = 0;
+  
+  /* RETURN THE INSTANCE */
   return obj;
 }

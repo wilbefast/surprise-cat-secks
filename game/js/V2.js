@@ -128,7 +128,9 @@ function V2(init_x, init_y)
   
   obj.normalise = function()
   {
-    if(norm < 0)
+    if(norm == 0)
+      return;
+    else if(norm < 0)
       recalculateNorm();
     
     var norm_inv = 1.0 / norm;

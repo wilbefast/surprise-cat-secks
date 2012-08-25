@@ -83,7 +83,7 @@ function Game()
     {
       // update objects, save update result
       var deleteThing 
-		= (objects[i] == null || things[i].update(this, t_multiplier));
+		= (things[i] == null || things[i].update(this, t_multiplier));
       // delete object if the update returns true
       if(deleteThing)
       {
@@ -105,15 +105,24 @@ function Game()
   {
     k_direction.setX((k_left && !k_right) ? -1 : ((!k_left && k_right) ? 1 : 0));
     k_direction.setY((k_up && !k_down) ? -1 : ((!k_up && k_down) ? 1 : 0));
-    k_direction.normalise();
+    
+    if(k_direction.x() && k_direction.x())
+      k_direction.normalise();
   }
   
   /* METHODS 
     (obj.f = function(p1, ... ) { }
   */
   
+  // getters
   obj.getKDirection = function() { return k_direction; }
   obj.isKShoot = function() { return k_shoot; }
+  
+  // modification
+  obj.addThing = function(new_thing)
+  {
+    things.push(new_thing);
+  }
   
   obj.injectUpdate = function(t_multiplier)
   {
@@ -129,6 +138,9 @@ function Game()
     context.fillRect(0,0,canvas.width, canvas.height);
     
     // draw objects
+    for(i = 0; i < things.length; i++)
+      if(things[i] != null)	// uber-rare but did happen... once o_O
+	things[i].draw();
     player.draw();
   }
   
