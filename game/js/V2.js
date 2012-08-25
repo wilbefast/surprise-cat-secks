@@ -31,8 +31,8 @@ function V2(init_x, init_y)
   var obj = this, typ = V2;
   
   // true attributes
-  var x, y, 		// coordinates
-      norm 		// the length of the vector, cached for speed
+  var x, y, 		// real: coordinates
+      norm; 		// real: the length of the vector, cached for speed
   
   /* SUBROUTINES 
   var f = function(p1, ... ) { } 
@@ -40,8 +40,9 @@ function V2(init_x, init_y)
   
   var recalculateNorm = function()
   {
-    // values are cached to avoid calculating too many inverses and square-roots
-    norm = Math.sqrt(x*x + y*y);
+    // value is cached to avoid calculating too many inverses and square-roots
+    norm = (x == 0) ? Math.abs(y) 
+		    : ((y == 0) ? Math.abs(x) : Math.sqrt(x*x + y*y));
   }
     
     
@@ -61,27 +62,23 @@ function V2(init_x, init_y)
   }
   
   // setters
-  obj.setX = function(new_x)
-  {
-    x = new_x;
-    norm = -1.0;
-  }
-  obj.setY = function(new_y)
-  {
-    y = new_y;
-    norm = -1.0;
-  }
   obj.setXY = function(new_x, new_y)
   {
     x = new_x;
     y = new_y;
     norm = -1.0;
   }
+  obj.setX = function(new_x)
+  {
+    obj.setXY(new_x, y);
+  }
+  obj.setY = function(new_y)
+  {
+    obj.setXY(x, new_y);
+  }
   obj.setV2 = function(v)
   {
-    x = v.x();
-    y = v.y();
-    norm = -1.0;
+    obj.setXY(v.x(), v.y());
   }
   
   obj.setNorm = function(new_norm)
@@ -100,11 +97,11 @@ function V2(init_x, init_y)
   // modification
   obj.addX = function(amount)
   {
-    obj.setX(x + amount);
+    obj.setXY(x + amount, y);
   }
   obj.addY = function(amount)
   {
-    obj.setY(y + amount);
+    obj.setXY(x, y + amount);
   }
   obj.addXY = function(amount_x, amount_y)
   {
@@ -119,6 +116,7 @@ function V2(init_x, init_y)
   {
     x *= amount;
     y *= amount;
+    norm *= amount;
   }
   
   obj.addNorm = function(amount)
@@ -139,13 +137,43 @@ function V2(init_x, init_y)
     
     var old_norm = norm;
     norm = norm_inv = 1.0;
+    angle_up_to_date = false;
     
     return old_norm;
+  }
+  
+  obj.addAngle = function(theta)
+  {
+    var cos_theta = Math.cos(theta),
+	sin_theta = Math.sin(theta);
+    obj.setXY(x*cos_theta - y*sin_theta, x*sin_theta + y*cos_theta);
+  }
+  
+  // mathematics
+  obj.dot = function(v)
+  {
+    return x*v.x() + y*v.y;
+  } 
+  obj.det = function(v)
+  {
+    return x*v.y() - y*v.x();
+  }
+  obj.dist2 = function(v)
+  {
+    var dx = v.x()-x, dy = v.y()-y;
+    return dx*dx + dy*dy;
+  }
+  obj.coline = function(v)
+  {
+    // cosine of 0 is 1, so v1 and v2 are colinear if v1.v2 = 1*|v1|*|v2|
+    return (obj.dot(v) == obj.norm()*v.norm());
   }
   
   /* INITIALISE AND RETURN INSTANCE */
   x = (init_x || 0.0);
   y = (init_y || 0.0);
   norm = -1.0;
+  angle = 0.0;
+  angle_up_to_date = false;
   return obj;
 }

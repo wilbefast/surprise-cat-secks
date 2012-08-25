@@ -31,7 +31,7 @@ Player.SPEED_DELTA = Player.SPEED_MAX / 8.0;
 Player.SPEED_MAX_2 = Math.pow(Player.SPEED_MAX, 2);
 Player.SPEED_MAX_INV = 1.0 / Player.SPEED_MAX;
 Player.FRICTION = Player.SPEED_MAX / 16.0;
-Player.TURN_SPEED = 0.01;
+Player.TURN_SPEED = 0.04;
 // weapons
 Player.RELOAD_TIME = 21;
 
@@ -48,8 +48,7 @@ function Player(x, y)
   
   // true attributes
   var pos,		// V2: position
-      facing,		// V2: normalised, representing DESIRED direction
-      facing_angle,	// real: representing ACTUAL direction
+      facing,		// {desired=V2, actual=V2, change_timer=real}: aim
       speed,		// V2: vertical and horizontal speed
       reloading;	// real: updates till gun is reloaded
       
@@ -62,11 +61,17 @@ function Player(x, y)
     // apply move commands
     if(move.x() || move.y())
     {
-      // reset facing
-      facing.setXY(move.x(), move.y());
-      if(move.x() && move.y())
-	facing.normalise();
-      
+      // reset desired facing
+      if((sign(move.x()) != sign(facing.desired.x())) 
+      || (sign(move.y()) != sign(facing.desired.y())))
+      {
+	facing.desired.setXY(move.x(), move.y());
+	if(move.x() && move.y())
+	  facing.desired.normalise();
+      }
+	
+
+       
       // accelerate
       speed.addXY(move.x()*typ.SPEED_DELTA*t_multiplier, 
 		  move.y()*typ.SPEED_DELTA*t_multiplier);
@@ -76,6 +81,16 @@ function Player(x, y)
 	speed.setNorm(typ.SPEED_MAX);
     }
     
+    // interpolate aqual angle towards desired angle
+    if(facing.actual.dist2(facing.desired) < 0.01)
+      facing.actual.setV2(facing.desired);
+    else
+    {
+      var turn_dir = (facing.actual.det(facing.desired) > 0.0) ? 1 : -1
+      facing.actual.addAngle(typ.TURN_SPEED*turn_dir);
+      console.log("turning");
+    }
+    
     // apply friction
     if(speed.x() || speed.y())
       speed.addNorm(-typ.FRICTION);
@@ -83,18 +98,7 @@ function Player(x, y)
     
     // update position
     pos.addXY(speed.x()*t_multiplier, speed.y()*t_multiplier);
-    
-    // lap around 
-    if(pos.x() > canvas.width + typ.HALF_SIZE)
-      pos.addX(-canvas.width - typ.HALF_SIZE );
-    else if(pos.x() < -typ.HALF_SIZE)
-      pos.addX(canvas.width + typ.HALF_SIZE);
-    
-    if(pos.y() > canvas.height + typ.HALF_SIZE)
-      pos.addY(-canvas.height - typ.HALF_SIZE );
-    else if(pos.y() < -typ.HALF_SIZE)
-      pos.addY(canvas.height + typ.HALF_SIZE);
-    
+    lap_around(pos, typ.HALF_SIZE);    
   }
   
   var doShoot = function(shoot, t_multiplier)
@@ -105,7 +109,7 @@ function Player(x, y)
 	reloading -= t_multiplier;
       else
       {
-	Game.INSTANCE.addThing(new Spray(pos, facing, speed));
+	Game.INSTANCE.addThing(new Spray(pos, facing.actual, speed));
 	reloading = typ.RELOAD_TIME;
       }
     }
@@ -123,8 +127,8 @@ function Player(x, y)
     // draw gun
     context.beginPath();
     context.moveTo(pos.x(), pos.y());
-    context.lineTo(pos.x() + typ.GUN_LENGTH*facing.x(), 
-		   pos.y() + typ.GUN_LENGTH*facing.y());
+    context.lineTo(pos.x() + typ.GUN_LENGTH*facing.actual.x(), 
+		   pos.y() + typ.GUN_LENGTH*facing.actual.y());
     context.stroke();
     
     // draw character
@@ -143,8 +147,9 @@ function Player(x, y)
   // position
   pos = new V2();
   // facing, straight down by default
-  facing = new V2();
-  facing.setXY(0, -1);
+  facing = new Object;
+  facing.desired = new V2(0, -1);
+  facing.actual = new V2(0, -1);
   // speed
   speed = new V2();
   pos.setXY((x || 0.0), (y || 0.0));

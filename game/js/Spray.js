@@ -22,7 +22,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 /// CLASS VARIABLES/CONSTANTS
 // aging
-Spray.AGING_SPEED = 0.004;
+Spray.AGING_SPEED = 0.008;
 Spray.MAX_SIZE = 128;
 // speed
 Spray.SPEED = 2.4;
@@ -68,12 +68,8 @@ function Spray(init_pos, init_dir, bonus_speed)
       return true;
     size = typ.MAX_SIZE * age;
     
-    // destroy if off-screen
-    if((pos.x() > canvas.width + size/2)
-      ||(pos.x() < -size/2)
-      ||(pos.y() > canvas.height + size/2)
-      ||(pos.y() < -size/2))
-	return true;
+    // lap around
+    lap_around(pos, size/2);   
     
     // don't destroy this object
     return false;
