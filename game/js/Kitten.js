@@ -31,8 +31,12 @@ Kitten.MOVE_SPEED = 1.0;
 // hitpoints
 Kitten.MAX_HITPOINTS = 100;
 Kitten.HITPOINTS_REGEN = 0.9;
+Kitten.REPRODUCE_THRESHOLD = Kitten.MAX_HITPOINTS * 0.75;
+Kitten.REPRODUCE_COST = Kitten.MAX_HITPOINTS * 0.5;
+Kitten.START_HITPOINTS = Kitten.REPRODUCE_COST;
 // repoduction
 Kitten.MAX_MUTATION = 0.1;
+Kitten.AGE_SPEED = 0.003;
 // counters
 Kitten.number = 0;
 Kitten.saturation = 0.0;
@@ -53,7 +57,7 @@ Kitten.OUTLINE_WIDTH = 1;
 Kitten.OUTLINE_COLOUR = "rgb(34, 34, 77)";
 
 /// INSTANCE ATTRIBUTES/METHODS
-function Kitten(parent_resist)
+function Kitten(mum_resist, dad_resist, mum_pos)
 {
   /* ATTRIBUTES 
   var a = x; 
@@ -64,11 +68,13 @@ function Kitten(parent_resist)
   
   // real attributes
   // V2: current position
-  var pos = new V2(Math.random()*canvas.width, Math.random()*canvas.height),	
+  var pos = new V2(),	
   // V2: current direction
       dir = new V2(rand_sign(), rand_sign()),
+  // real: between 0 and 1, 1 is mature and can repoduce
+      age = (mum_resist && dad_resist) ? 0.0 : rand_between(0.0, 1.0), 
   // int: remaining hitpoints
-      hitpoints = typ.MAX_HITPOINTS,	
+      hitpoints = typ.START_HITPOINTS,	
   // int: body-heat, where positive means burning and negative freezing
       heat = 0,
   // int: poison amount
@@ -78,16 +84,20 @@ function Kitten(parent_resist)
   // string: "rgb(r,g,b)" format string corresponding to resistances
       colour = new String();
   
-  // normalise direction vector
+  // set position and normalise direction vector
+  if(mum_pos)
+    pos.setV2(mum_pos);
+  else
+    pos.setXY(Math.random()*canvas.width, Math.random()*canvas.height);
   dir.normalise();
-      
+    
   // initialise resistances
   for(i = 0; i < 3; i++)
   {
-    if(parent_resist)
+    if(mum_resist && dad_resist)
     {
       // apply mutation
-      resist[i] = parent.resist[i] 
+      resist[i] = (mum_resist[i] + dad_resist[i])/2
 		+ rand_between(-typ.MAX_MUTATION, typ.MAX_MUTATION);
       // cap resistance
       if(resist[i] > 1)
@@ -96,7 +106,7 @@ function Kitten(parent_resist)
 	resist[i] = 0;
     }
     else
-      resist[i] =  rand_between(0.0, 1.0);
+      resist[i] = 0.0; //rand_between(0.0, 1.0);
     
   }
   // cache the colour corresponding to these resistances
@@ -135,15 +145,25 @@ function Kitten(parent_resist)
     
     // apply the damage
     if(damage > 0)
+    {
       hitpoints -= damage;
+    }
     
     // cap burn and freeze amounts
     if(Math.abs(heat) > typ.MAX_HEAT_ABS)
       heat = sign(heat)*typ.MAX_HEAT_ABS;
   }
   
-  var collision_kitten = function(kitten)
+  var collision_kitten = function(mate)
   {
+    if(typ.number < typ.MAX_NUMBER 
+    && hitpoints >= typ.REPRODUCE_THRESHOLD 
+    && mate.getHitpoints() >= typ.REPRODUCE_THRESHOLD)
+    {
+      hitpoints -= typ.REPRODUCE_COST;
+      mate.addHitpoints(-typ.REPODUCE_COST);
+      Game.INSTANCE.addThing(new Kitten(resist, mate.getResistance()), pos);
+    }
   }
   
   var push = function(xx, yy)
@@ -159,22 +179,29 @@ function Kitten(parent_resist)
   obj.getPosition = function() { return pos; }
   obj.getRadius = function() { return typ.HALF_SIZE; }
   obj.getType = function() { return typ; }
+  obj.getHitpoints = function() { return hitpoints; }
+  obj.getResistance = function() { return resist; }
+  
+  // setters
+  obj.addHitpoints = function(amount) { hitpoints += amount; }
   
   // injections
   obj.draw = function()
   {
+    // size depends on age
+    var half_size = typ.HALF_SIZE*age, size = 2*half_size;
+    
     // draw colour
     context.fillStyle = colour;
-    context.fillRect(pos.x()-typ.HALF_SIZE, pos.y()-typ.HALF_SIZE, 
-		     typ.SIZE, typ.SIZE);
+    context.fillRect(pos.x()-half_size, pos.y()-half_size, size, size);
     // draw face
-    context.drawImage(typ.IMG_FACE, pos.x()-typ.HALF_SIZE, pos.y()-typ.HALF_SIZE, 
-		     typ.SIZE, typ.SIZE);		     
+    if(age == 1.0)
+      context.drawImage(typ.IMG_FACE, 
+			pos.x()-typ.HALF_SIZE, pos.y()-typ.HALF_SIZE);		     
     // draw outline
     context.lineWidth = typ.OUTLINE_WIDTH;
     context.strokeStyle = typ.OUTLINE_COLOUR;
-    context.strokeRect(pos.x()-typ.HALF_SIZE, pos.y()-typ.HALF_SIZE, 
-		     typ.SIZE, typ.SIZE);
+    context.strokeRect(pos.x()-half_size, pos.y()-half_size, size, size);
   }
   
   obj.update = function(game, t_multiplier)
@@ -184,8 +211,17 @@ function Kitten(parent_resist)
     if(heat != 0)
       speed *= (1.0 + heat/typ.MAX_HEAT_ABS);
     
+    // get older
+    if(age != 1.0)
+    {
+      if(age - typ.AGE_SPEED >= 1.0)
+	age = 1.0;
+      else
+	age += typ.AGE_SPEED;
+    }
     // regenerate health
-    if(!heat && !poison && hitpoints < typ.MAX_HITPOINTS)
+    if(!heat && !poison && hitpoints < typ.MAX_HITPOINTS 
+    && typ.number < typ.MAX_NUMBER)
     {
       // faster regenerate the fewer kittens there are
       var hitpoints_regen 
@@ -238,6 +274,7 @@ function Kitten(parent_resist)
     {
       typ.number--;
       typ.saturation = (typ.number/typ.MAX_NUMBER);
+      console.log("kill!");
       return true;
     }
     else

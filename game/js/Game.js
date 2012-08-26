@@ -249,7 +249,8 @@ function Game()
   obj.injectMouseDown = function(x, y) 
   { 
     m_shoot = true;
-    injectMouseMove(x, y);
+    m_pos.setXY(x, y);
+    injectMouseDir(x, y);
   }
   
   obj.injectMouseUp = function(x, y) 
