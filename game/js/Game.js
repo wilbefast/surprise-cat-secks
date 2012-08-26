@@ -28,9 +28,6 @@ Game.TITLE = "Black Dog";
 Game.AUTHOR = "By William 'wilbefast' J.D.";
 // timing: maximum number of frames per second
 Game.MAX_FPS = 60;
-// colours
-Game.C_BACKGROUND = 'rgb(186, 186, 100)';
-Game.C_TEXT = 'rgb(69, 69, 155)';
 // left keys
 Game.K_LEFT = 37;
 Game.K_A = 'A'.charCodeAt(0);		// qwerty + dvorak
@@ -58,7 +55,13 @@ Game.KITTEN_T = 0;
 Game.PLAYER_T = 1;
 Game.CLOUD_T = 2;
 // images
-Game.OUTLINE = load_image("outline.png");
+Game.OUTLINE = load_image("outline2.png");
+// colours, fonts, line widths, etc
+Game.C_BACKGROUND = "rgb(186, 186, 100)";
+Game.C_TEXT = "rgb(69, 69, 155)";
+Game.C_OUTLINE = ["rgba(69, 69, 155, 0.9)", "rgba(69, 69, 155, 0.6)", 
+		  "rgba(69, 69, 155, 0.3)"];
+Game.OUTLINE_WIDTHS = 10;
 
 
 /// INSTANCE ATTRIBUTES/METHODS
@@ -226,7 +229,13 @@ function Game()
 	things[i].draw();
       
     // draw outline overlay
-    context.drawImage(typ.OUTLINE, 0, 0);
+    context.lineWidth = typ.OUTLINE_WIDTHS;
+    for(var i = 0; i < 3; i++)
+    {
+      var offset = (i+0.5)*typ.OUTLINE_WIDTHS;
+      context.strokeStyle = typ.C_OUTLINE[i];
+      context.strokeRect(offset, offset, canvas.width-offset*2, canvas.height-offset*2);
+    }
   }
   
   obj.injectMouseDown = function(x, y) 
