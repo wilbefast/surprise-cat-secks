@@ -30,6 +30,9 @@ Kitten.TURN_SPEED = 0.1;
 // counters
 Kitten.number = 0;
 Kitten.MAX_NUMBER = 50;
+// debuff effects
+Kitten.BURNING_MAX = 100;
+Kitten.FREEZING_MAX = 100;
 
 
 /// INSTANCE ATTRIBUTES/METHODS
@@ -48,7 +51,9 @@ function Kitten(parent_resist)
   // V2: current direction
       dir = new V2(0.0, 0.0),
   // int: remaining hitpoints
-      health = typ.MAX_HEALTH,	
+      hitpoints = typ.MAX_HEALTH,	
+  // int: body-heat, where positive means burning and negative freezing
+      heat = 0,
   // [r, g, b]: resistance to fire, nerve-gas and nitro, between 0 and 1
       resist = new Array();
 
@@ -73,6 +78,38 @@ function Kitten(parent_resist)
   /* SUBROUTINES 
   var f = function(p1, ... ) { } 
   */
+  
+  var collision_cloud = function(cloud)
+  {
+    // local variables
+    var cloud_type = cloud.getCloudType(),
+	damage = (1.0-resist[cloud_type]) * cloud.getDamage(),
+	previous_heat = heat;
+	
+    // we need to go deeper!
+    switch(cloud_type)
+    {
+      case Cloud.NAPALM:
+	heat += damage;
+	if(previous_heat < 0)
+	  damage -= -previous_heat; 
+	break;
+      case Cloud.NERVE_GAS:
+	dir.addAngle(rand_between(-1, 1)*typ.TURN_SPEED);
+	break;
+      case Cloud.LIQUID_NITROGEN:
+	heat -= damage;
+	if(previous_heat > 0)
+	  damage -= previous_heat; 
+	break;
+    }
+    
+    if(damage > 0)
+    {
+      hitpoints -= damage;
+      console.log("took " + damage + " damage => down to " + hitpoints);
+    }
+  }
   
   /* METHODS 
     (obj.f = function(p1, ... ) { }
@@ -109,7 +146,7 @@ function Kitten(parent_resist)
     lap_around(pos, typ.HALF_SIZE);   
     
     // destroy this object if its hitpoints fall too low
-    if(health <= 0)
+    if(hitpoints <= 0)
     {
       Kitten.number--;
       return true;
@@ -119,14 +156,20 @@ function Kitten(parent_resist)
   }
   
   obj.collision = function(other)
-  {
-    dir.setV2(pos);
-    dir.subV2(other.getPosition());
+  { 
+    // turn away from collisions
+    dir.setFromTo(other.getPosition(), pos);
     dir.normalise();
-    health -= 1;
+    
+    switch(other.getType())
+    {
+      case Cloud:
+	collision_cloud(other);
+      break;
+    }
+    
   }
    
-
     
   /* RETURN INSTANCE */
   Kitten.number++;

@@ -32,6 +32,8 @@ Cloud.MAX_SIZE = [128, 256, 96];
 // speed
 Cloud.SPEED = [2.4, 2.2, 2.6];
 Cloud.FRICTION = [0.01, 0.017, 0.004];
+// damage
+Cloud.BASE_DAMAGE = [5.6, 7.3, 4.4];
 // colour
 Cloud.COLOUR = ["rgba(255, 255, 0,", "rgba(0, 255, 127,", "rgba(0, 127, 255,"]
 
@@ -56,7 +58,10 @@ function Cloud(init_type, init_pos, init_dir, bonus_speed)
       size = 0.0,
       half_size = 0.0,
   // enum in Cloud.NAPALM, Cloud.NERVE_GAS or Cloud.LIQUID NITROGEN
-      cloud_type = init_type;
+      cloud_type = init_type,
+  // damage this cloud will cause per collision
+      damage;
+      
   speed.scale(typ.SPEED[cloud_type]);
   speed.addV2(bonus_speed);
   
@@ -72,6 +77,8 @@ function Cloud(init_type, init_pos, init_dir, bonus_speed)
   obj.getPosition = function() { return pos; }
   obj.getRadius = function() { return half_size; }
   obj.getType = function() { return typ; }
+  obj.getCloudType = function() { return cloud_type; }
+  obj.getDamage = function() { return damage; }
   
   // injections
   obj.draw = function()
@@ -86,11 +93,15 @@ function Cloud(init_type, init_pos, init_dir, bonus_speed)
     pos.addXY(speed.x()*t_multiplier, speed.y()*t_multiplier);
     
     // the clouds gets older, becoming larger and thinner, then dying
+    // age
     age += typ.AGING_SPEED[cloud_type] * t_multiplier;
     if(age >= 1.0)
       return true;
+    // size
     size = typ.MAX_SIZE[cloud_type] * age;
     half_size = size * 0.5;
+    // damage
+    damage = (1.0-age)*typ.BASE_DAMAGE[cloud_type];
     
     // apply friction
     if(speed.x() || speed.y())
