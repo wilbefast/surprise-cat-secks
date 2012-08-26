@@ -52,7 +52,7 @@ Game.K_O = 'O'.charCodeAt(0);		// dvorak
 Game.K_ENTER = 13;
 Game.K_SPACE = 32;
 // gameplay constants
-Game.STARTING_KITTENS = 1;//15;
+Game.STARTING_KITTENS = Kitten.MAX_NUMBER;
 // object types
 Game.KITTEN_T = 0;
 Game.PLAYER_T = 1;

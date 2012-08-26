@@ -34,15 +34,16 @@ Kitten.MAX_MUTATION = 0.1;
 // counters
 Kitten.number = 0;
 Kitten.saturation = 0.0;
-Kitten.MAX_NUMBER = 50;
+Kitten.MAX_NUMBER = 35;
 // heat and cold
-Kitten.MAX_HEAT_ABS = 50;
-Kitten.HEAT_DAMAGE = 0.04;
-Kitten.HEAT_LOSS = Kitten.MAX_HEAT_ABS/40;
+Kitten.MAX_HEAT_ABS = 30;
+Kitten.HEAT_LOSS = Kitten.MAX_HEAT_ABS/70;
+Kitten.HEAT_DAMAGE = Kitten.HEAT_LOSS; // 1 heat loss means 1 damage
 // poison from nerve-gas
-Kitten.MAX_POISON = 50;
-Kitten.POISON_DAMAGE = 0.01;
-Kitten.POISON_DISSIPATION = Kitten.MAX_POISON/50;
+Kitten.MAX_POISON = 70;
+Kitten.POISON_DISSIPATION = Kitten.MAX_POISON/90;
+Kitten.POISON_DAMAGE = Kitten.POISON_DISSIPATION; 
+				      // 1 poison dissipation = 1 damage
 
 /// INSTANCE ATTRIBUTES/METHODS
 function Kitten(parent_resist)
@@ -150,8 +151,6 @@ function Kitten(parent_resist)
   
   obj.update = function(game, t_multiplier)
   { 
-    //console.log("hp="+Math.floor(hitpoints)+", heat="+Math.floor(heat)+", poison="+Math.floor(poison));
-    
     // slow down if cold, speed up if hot
     var speed = typ.MOVE_SPEED * t_multiplier;
     if(heat != 0)
@@ -171,7 +170,6 @@ function Kitten(parent_resist)
     // burn or freeze
     else if(heat)
     {
-      
       // take damage
       var heat_damage = typ.HEAT_DAMAGE * t_multiplier;
       hitpoints -= heat_damage;
