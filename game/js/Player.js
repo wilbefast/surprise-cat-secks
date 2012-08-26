@@ -93,6 +93,7 @@ function Player(x, y)
   obj.getPosition = function() { return pos; }
   obj.getRadius = function() { return typ.HALF_SIZE; }
   obj.getType = function() { return typ; }
+  obj.getWeapon = function() { return weapon_type; }
   
   // injections
   obj.change_weapon = function(delta)

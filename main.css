@@ -11,8 +11,17 @@ body
 canvas 
 { 
   border:2px solid rgb(15,15,15); 
-  margin:1%;
 }
+
+#game_canvas 
+{ 
+  cursor: none;
+}
+
+#draw:active 
+{ 
+  cursor: none;
+}​
 
 .box
 {

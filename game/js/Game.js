@@ -58,6 +58,8 @@ Game.C_TEXT = "rgb(69, 69, 155)";
 Game.C_OUTLINE = ["rgba(69, 69, 155, 0.9)", "rgba(69, 69, 155, 0.6)", 
 		  "rgba(69, 69, 155, 0.3)"];
 Game.OUTLINE_WIDTHS = 10;
+Game.CROSSHAIR_LINE_WIDTH = 3;
+Game.CROSSHAIR_SIZE = 24;
 
 
 /// INSTANCE ATTRIBUTES/METHODS
@@ -181,9 +183,8 @@ function Game()
       k_direction.normalise();
   }
   
-  var injectMousePos = function(x, y)
+  var injectMouseDir = function(x, y)
   {
-    m_pos.setXY(x, y);
     m_direction.setFromTo(player.getPosition(), m_pos);
     m_direction.normalise();
   }
@@ -233,12 +234,22 @@ function Game()
       context.strokeStyle = typ.C_OUTLINE[i];
       context.strokeRect(offset, offset, canvas.width-offset*2, canvas.height-offset*2);
     }
+    
+    // draw crosshair
+    context.beginPath();
+    context.strokeStyle = Cloud.COLOUR[player.getWeapon()] + "1)";
+    context.moveTo(m_pos.x(), m_pos.y()-typ.CROSSHAIR_SIZE);	// top
+    context.lineTo(m_pos.x()+typ.CROSSHAIR_SIZE, m_pos.y());	// right
+    context.lineTo(m_pos.x(), m_pos.y()+typ.CROSSHAIR_SIZE);	// bottom
+    context.lineTo(m_pos.x()-typ.CROSSHAIR_SIZE, m_pos.y());	// left
+    context.closePath();
+    context.stroke();
   }
   
   obj.injectMouseDown = function(x, y) 
   { 
     m_shoot = true;
-    injectMousePos(x, y);
+    injectMouseMove(x, y);
   }
   
   obj.injectMouseUp = function(x, y) 
@@ -248,8 +259,9 @@ function Game()
   
   obj.injectMouseMove = function(x, y)
   {
+    m_pos.setXY(x, y);
     if(m_shoot)
-      injectMousePos(x, y);
+      injectMouseDir(x, y);
   }
   
   obj.injectMouseWheel = function(delta)
