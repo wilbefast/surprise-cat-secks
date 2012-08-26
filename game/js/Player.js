@@ -30,7 +30,7 @@ Player.SPEED_MAX = 1.9;
 Player.SPEED_DELTA = Player.SPEED_MAX / 8.0;
 Player.SPEED_MAX_2 = Math.pow(Player.SPEED_MAX, 2);
 Player.SPEED_MAX_INV = 1.0 / Player.SPEED_MAX;
-Player.FRICTION = Player.SPEED_MAX / 16.0;
+Player.FRICTION = 0.1;
 Player.TURN_SPEED = 0.05;
 Player.FACING_CHANGE_TIME = 3;
 // weapons
@@ -57,7 +57,9 @@ function Player(x, y)
   // V2: vertical and horizontal speed
       speed = new V2(),	
   // real: updates till gun is reloaded
-      reloading = 0;	
+      reloading = 0,
+  // enum in Cloud.NAPALM, Cloud.NERVE_GAS or Cloud.LIQUID NITROGEN
+      weapon_type = Cloud.NAPALM;
   
   // initialise from parameters
   pos.setXY((x || 0.0), (y || 0.0));
@@ -120,7 +122,12 @@ function Player(x, y)
     
     // apply friction
     if(speed.x() || speed.y())
-      speed.addNorm(-typ.FRICTION);
+    {
+      if(speed.norm2() > 0.01)
+	speed.scale(1-typ.FRICTION);
+      else
+	speed.setNorm(0.0);
+    }
     
     // update position
     pos.addXY(speed.x()*t_multiplier, speed.y()*t_multiplier);
@@ -141,7 +148,8 @@ function Player(x, y)
 	reloading -= t_multiplier;
       else
       {
-	Game.INSTANCE.addThing(new Cloud(nozzle_pos, facing.actual, speed));
+	Game.INSTANCE.addThing(new Cloud(weapon_type, nozzle_pos, 
+					 facing.actual, speed));
 	reloading = typ.RELOAD_TIME;
       }
     }
@@ -157,6 +165,13 @@ function Player(x, y)
   obj.getRadius = function() { return typ.HALF_SIZE; }
   
   // injections
+  obj.change_weapon = function()
+  {
+    weapon_type++;
+    if(weapon_type >= Cloud.N_TYPES)
+      weapon_type -= Cloud.N_TYPES;
+  }
+  
   obj.draw = function()
   {
     context.fillStyle = Game.C_TEXT;

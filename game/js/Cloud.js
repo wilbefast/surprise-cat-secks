@@ -21,14 +21,22 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 /*** CLASS representing a cloud of flames, liquid-nitrogen or nerve-gas ***/
 
 /// CLASS VARIABLES/CONSTANTS
+// types of cloud, used to index other constants
+Cloud.N_TYPES = 3;
+Cloud.NAPALM = 0;
+Cloud.NERVE_GAS = 1;
+Cloud.LIQUID_NITROGEN = 2;
 // aging
-Cloud.AGING_SPEED = 0.012;
-Cloud.MAX_SIZE = 128;
+Cloud.AGING_SPEED = [0.012, 0.009, 0.01];
+Cloud.MAX_SIZE = [128, 256, 96];
 // speed
-Cloud.SPEED = 2.4;
+Cloud.SPEED = [2.4, 2.2, 2.6];
+Cloud.FRICTION = [0.01, 0.017, 0.004];
+// colour
+Cloud.COLOUR = ["rgba(255, 255, 0,", "rgba(0, 255, 127,", "rgba(0, 127, 255,"]
 
 /// INSTANCE ATTRIBUTES/METHODS
-function Cloud(init_pos, init_dir, bonus_speed)
+function Cloud(init_type, init_pos, init_dir, bonus_speed)
 {
   /* ATTRIBUTES 
   var a = x; 
@@ -38,16 +46,18 @@ function Cloud(init_pos, init_dir, bonus_speed)
   var obj = this, typ = Cloud;
   
   // real attributes
-  var pos = new V2(init_pos.x(), init_pos.y()),	
   // V2: current position
-      speed = new V2(init_dir.x(), init_dir.y()),	
+  var pos = new V2(init_pos.x(), init_pos.y()),	
   // V2: velocity
-      age = 0.0,	
+      speed = new V2(init_dir.x(), init_dir.y()),	
   // real: between 0 (birth) and 1 (death)
-      size = 0.0,
-      half_size = 0.0;
+      age = 0.0,	
   // real: between 0 (birth) and typ.MAX_SIZE (death)
-  speed.scale(typ.SPEED);
+      size = 0.0,
+      half_size = 0.0,
+  // enum in Cloud.NAPALM, Cloud.NERVE_GAS or Cloud.LIQUID NITROGEN
+      cloud_type = init_type;
+  speed.scale(typ.SPEED[cloud_type]);
   speed.addV2(bonus_speed);
   
   /* SUBROUTINES 
@@ -65,7 +75,7 @@ function Cloud(init_pos, init_dir, bonus_speed)
   // injections
   obj.draw = function()
   {
-    context.fillStyle = "rgba(255, 255, 0," + (1.0-age) + ")";
+    context.fillStyle = typ.COLOUR[cloud_type] + (1.0-age) + ")";
     context.fillRect(pos.x()-half_size, pos.y()-half_size, size, size);
   }
   
@@ -75,11 +85,20 @@ function Cloud(init_pos, init_dir, bonus_speed)
     pos.addXY(speed.x()*t_multiplier, speed.y()*t_multiplier);
     
     // the clouds gets older, becoming larger and thinner, then dying
-    age += typ.AGING_SPEED;
+    age += typ.AGING_SPEED[cloud_type] * t_multiplier;
     if(age >= 1.0)
       return true;
-    size = typ.MAX_SIZE * age;
+    size = typ.MAX_SIZE[cloud_type] * age;
     half_size = size * 0.5;
+    
+    // apply friction
+    if(speed.x() || speed.y())
+    {
+      if(speed.norm2() > 0.01)
+	speed.scale(1-typ.FRICTION[cloud_type]);
+      else
+	speed.setNorm(0.0);
+    }
     
     // lap around the edges of the screen
     lap_around(pos, half_size);   

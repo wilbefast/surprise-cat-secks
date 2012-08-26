@@ -49,7 +49,7 @@ Game.K_DOWN = 40;
 Game.K_S = 'S'.charCodeAt(0);		// qwerty + azerty
 Game.K_O = 'O'.charCodeAt(0);		// dvorak
 // other keys
-Game.K_CTRL = 17;
+Game.K_ENTER = 13;
 Game.K_SPACE = 32;
 // gameplay constants
 Game.STARTING_KITTENS = 15;
@@ -71,7 +71,8 @@ function Game()
       k_left, k_right, 	// booleans for left and right arrow keys
       k_up, key_down,	// booleans for up and down arrow keys
       k_direction,	// {x,y} reprenting direction pressed on key-pad
-      k_shoot;		// boolean representing whether shoot key is pressed
+      k_shoot,		// boolean representing whether shoot key is pressed
+      k_wpn_change;	// is the weapon change key being pressed?
       
   /* SUBROUTINES 
     var f = function(p1, ... ) { } 
@@ -148,8 +149,13 @@ function Game()
       case typ.K_DOWN:	case typ.K_S:	case typ.K_O: 		
 	k_down = state; 	
 	break;
-      case typ.K_CTRL:		
+      case typ.K_SPACE:		
 	k_shoot = state; 
+	break;
+      case typ.K_ENTER:
+	if(state && !k_wpn_change)
+	  player.change_weapon();
+	k_wpn_change = state;
 	break;
     }
     

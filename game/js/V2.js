@@ -91,7 +91,7 @@ function V2(init_x, init_y)
   
   obj.setNorm = function(new_norm)
   {
-    if(new_norm < 0.0)
+    if(new_norm <= 0.0)
       x = y = norm = 0.0;
     else
     {
