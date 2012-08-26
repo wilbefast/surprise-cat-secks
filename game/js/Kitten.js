@@ -35,7 +35,7 @@ Kitten.REPRODUCE_THRESHOLD = Kitten.MAX_HITPOINTS * 0.75;
 Kitten.REPRODUCE_COST = Kitten.MAX_HITPOINTS * 0.5;
 Kitten.START_HITPOINTS = Kitten.REPRODUCE_COST;
 // repoduction
-Kitten.MAX_MUTATION = 0.1;
+Kitten.MAX_MUTATION = 0.4;
 Kitten.AGE_SPEED = 0.003;
 // counters
 Kitten.number = 0;
@@ -220,7 +220,7 @@ function Kitten(mum_resist, dad_resist, mum_pos)
 	age += typ.AGE_SPEED;
     }
     // regenerate health
-    if(!heat && !poison && hitpoints < typ.MAX_HITPOINTS 
+    else if(!heat && !poison && hitpoints < typ.MAX_HITPOINTS 
     && typ.number < typ.MAX_NUMBER)
     {
       // faster regenerate the fewer kittens there are

@@ -18,6 +18,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+
 var next_tick = 0, missed_ticks = 0, this_tick = 0;
 
 function init_timing()
@@ -94,7 +95,7 @@ function main()
   loading_screen();
 }
 
-/* INPUT HANDLING */
+/* INPUT HANDLING -- CANVAS */
 
 canvas.onmousedown = function(event)
 {
@@ -126,6 +127,8 @@ canvas.onmousewheel = function(event)
   event.stopPropagation();
 }
 
+/* INPUT HANDLING -- WINDOW */
+
 window.onkeydown = function(event) 
 { 
   Game.INSTANCE.injectKeyDown(event.keyCode);
@@ -137,6 +140,18 @@ window.onkeyup = function(event)
   Game.INSTANCE.injectKeyUp(event.keyCode);
   event.stopPropagation();
 }
+
+/* INPUT HANDLING -- DOCUMENT */
+
+document.onmousedown = function(e) 
+{ 
+  // since we consumed the canvas mouse events, this only occurs if we click
+  // outside of the canvas ;)
+  Game.INSTANCE.setFocus(false);
+}
+
+// don't select text from the canvas!
+document.onselectstart = function(){ return !Game.INSTANCE.isFocus(); }
 
 
 /* LAUNCH THE APPLICATION */

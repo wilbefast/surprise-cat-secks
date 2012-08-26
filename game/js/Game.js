@@ -57,6 +57,7 @@ Game.C_BACKGROUND = "rgb(186, 186, 100)";
 Game.C_TEXT = "rgb(69, 69, 155)";
 Game.C_OUTLINE = ["rgba(69, 69, 155, 0.9)", "rgba(69, 69, 155, 0.6)", 
 		  "rgba(69, 69, 155, 0.3)"];
+Game.C_MASK = "rgba(34, 34, 78, 0.5)";
 Game.OUTLINE_WIDTHS = 10;
 Game.CROSSHAIR_LINE_WIDTH = 3;
 Game.CROSSHAIR_SIZE = 24;
@@ -82,7 +83,8 @@ function Game()
       k_wpn_change,	// boolean: is the weapon change key being pressed?
       m_shoot,		// boolean: is the mouse shoot key being pressed?
       m_pos,		// V2: {x,y} position of the mouse
-      m_direction;	// V2: {x,y} normalised player->mouse direction
+      m_direction,	// V2: {x,y} normalised player->mouse direction
+      focus;		// boolean: pause if we lose focus
       
   /* SUBROUTINES 
     var f = function(p1, ... ) { } 
@@ -109,6 +111,9 @@ function Game()
     m_direction = new V2();
     m_shoot = false;
     m_wheel_offset = 0;
+    
+    // pause or unpause
+    focus = true;
   }
   
   // update dynamic objects (a variable number stored in an array)
@@ -202,21 +207,29 @@ function Game()
   obj.isInputMouse = function() { return m_shoot; }
   obj.getInputMouse = function() { return m_direction; }
   obj.getPlayer = function() { return player; }
+  obj.isFocus = function() { return focus; }
   
   // modification
+  obj.setFocus = function(new_focus) { focus = new_focus; }
+  
   obj.addThing = function(new_thing)
   {
     things.push(new_thing);
   }
   
+  
+  // injections
   obj.injectUpdate = function(t_multiplier)
   {
+    if(!focus)
+      return;
+    
     // update game objects
     updateThings(t_multiplier);
   }
  
   obj.injectDraw = function()
-  {  
+  {
     // clear canvas
     context.fillStyle = Game.C_BACKGROUND;
     context.fillRect(0,0,canvas.width, canvas.height);
@@ -235,48 +248,73 @@ function Game()
       context.strokeRect(offset, offset, canvas.width-offset*2, canvas.height-offset*2);
     }
     
-    // draw crosshair
-    context.beginPath();
-    context.strokeStyle = Cloud.COLOUR[player.getWeapon()] + "1)";
-    context.moveTo(m_pos.x(), m_pos.y()-typ.CROSSHAIR_SIZE);	// top
-    context.lineTo(m_pos.x()+typ.CROSSHAIR_SIZE, m_pos.y());	// right
-    context.lineTo(m_pos.x(), m_pos.y()+typ.CROSSHAIR_SIZE);	// bottom
-    context.lineTo(m_pos.x()-typ.CROSSHAIR_SIZE, m_pos.y());	// left
-    context.closePath();
-    context.stroke();
+    if(focus)
+    {
+      // draw crosshair
+      context.beginPath();
+      context.strokeStyle = Cloud.COLOUR[player.getWeapon()] + "1)";
+      context.moveTo(m_pos.x(), m_pos.y()-typ.CROSSHAIR_SIZE);	// top
+      context.lineTo(m_pos.x()+typ.CROSSHAIR_SIZE, m_pos.y());	// right
+      context.lineTo(m_pos.x(), m_pos.y()+typ.CROSSHAIR_SIZE);	// bottom
+      context.lineTo(m_pos.x()-typ.CROSSHAIR_SIZE, m_pos.y());	// left
+      context.closePath();
+      context.stroke();
+    }
+    else
+    {
+      // clear canvas
+      context.fillStyle = Game.C_MASK;
+      context.fillRect(0,0,canvas.width, canvas.height);
+    }
+      
   }
   
   obj.injectMouseDown = function(x, y) 
   { 
-    m_shoot = true;
-    m_pos.setXY(x, y);
-    injectMouseDir(x, y);
+    if(!focus)
+      focus = true;
+    else
+    {
+      m_shoot = true;
+      m_pos.setXY(x, y);
+      injectMouseDir(x, y);
+    }
   }
   
   obj.injectMouseUp = function(x, y) 
-  { 
+  {   
+    // release mouse button even when not focused!
     m_shoot = false;
   }
   
   obj.injectMouseMove = function(x, y)
   {
+    if(!focus)
+      return;
+    
     m_pos.setXY(x, y);
     if(m_shoot)
       injectMouseDir(x, y);
   }
   
   obj.injectMouseWheel = function(delta)
-  {
+  {    
+    if(!focus)
+      return;
+    
     player.change_weapon(sign(delta));
   }
   
   obj.injectKeyDown = function(key)
   {
+    if(!focus)
+      return;
     injectKeyState(key, true);
   }
   
   obj.injectKeyUp = function(key)
   {
+    // release key even when not focused!
     injectKeyState(key, false);
   }
 
