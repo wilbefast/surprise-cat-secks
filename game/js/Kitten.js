@@ -25,14 +25,14 @@ Kitten.SIZE = 16;
 Kitten.HALF_SIZE = Kitten.SIZE / 2;
 // characteristics
 Kitten.MAX_MUTATION = 0.1;
-Kitten.MAX_HEALTH = 100;
+Kitten.MAX_HEALTH = 10000000;
 Kitten.TURN_SPEED = 0.1;
+Kitten.MOVE_SPEED = 1.0;
 // counters
 Kitten.number = 0;
 Kitten.MAX_NUMBER = 50;
 // debuff effects
-Kitten.BURNING_MAX = 100;
-Kitten.FREEZING_MAX = 100;
+Kitten.MAX_HEAT_ABS = 80;
 
 
 /// INSTANCE ATTRIBUTES/METHODS
@@ -55,7 +55,9 @@ function Kitten(parent_resist)
   // int: body-heat, where positive means burning and negative freezing
       heat = 0,
   // [r, g, b]: resistance to fire, nerve-gas and nitro, between 0 and 1
-      resist = new Array();
+      resist = new Array(),
+  // string: "rgb(r,g,b)" format string corresponding to resistances
+      colour = new String();
 
   // initialise resistances
   for(i = 0; i < 3; i++)
@@ -72,8 +74,15 @@ function Kitten(parent_resist)
 	resist[i] = 0;
     }
     else
-      resist[i] = 0;
+      resist[i] = 0;// rand_between(0.0, 1.0); //0;
+    
   }
+  // cache the colour corresponding to these resistances
+  var r = Math.floor(255*(1.0-resist[0])), 
+      g = Math.floor(255*(1.0-resist[1])), 
+      b = Math.floor(255*(1.0-resist[2]));
+  colour =  "rgb(" + r + "," + g + "," + b + ")";
+  console.log(colour);
   
   /* SUBROUTINES 
   var f = function(p1, ... ) { } 
@@ -95,7 +104,6 @@ function Kitten(parent_resist)
 	  damage -= -previous_heat; 
 	break;
       case Cloud.NERVE_GAS:
-	dir.addAngle(rand_between(-1, 1)*typ.TURN_SPEED);
 	break;
       case Cloud.LIQUID_NITROGEN:
 	heat -= damage;
@@ -104,11 +112,15 @@ function Kitten(parent_resist)
 	break;
     }
     
+    // apply the damage
     if(damage > 0)
-    {
       hitpoints -= damage;
-      console.log("took " + damage + " damage => down to " + hitpoints);
-    }
+    
+    // cap burn and freeze amounts
+    if(Math.abs(heat) > typ.MAX_HEAT_ABS)
+      heat = sign(heat)*typ.MAX_HEAT_ABS;
+    
+    console.log("took " + Math.floor(damage) + " damage => down to " + Math.floor(hitpoints) + " with heat = " + Math.floor(heat));
   }
   
   /* METHODS 
@@ -123,20 +135,23 @@ function Kitten(parent_resist)
   // injections
   obj.draw = function()
   {
-    var r = 255*(1.0-resist[0]), 
-	g = 255*(1.0-resist[1]), 
-	b = 255*(1.0-resist[2]);
-    
-    context.fillStyle = "rgb(" + r + "," + g + "," + b + ")";
+    context.fillStyle = colour;
     context.fillRect(pos.x()-typ.HALF_SIZE, pos.y()-typ.HALF_SIZE, 
 		     typ.SIZE, typ.SIZE);
   }
   
   obj.update = function(game, t_multiplier)
   { 
+    // slow down if cold, speed up if hot
+    var speed = typ.MOVE_SPEED * t_multiplier;
+    if(heat != 0)
+      speed *= (1.0 + heat/typ.MAX_HEAT_ABS);
+    
+    // decrease heat over time
+    
     //console.log("pre update" + pos.x() + "," + pos.y());
     // move the kitten
-    pos.addXY(dir.x()*t_multiplier, dir.y()*t_multiplier);
+    pos.addXY(dir.x()*speed, dir.y()*speed);
     //console.log("post update" + pos.x() + "," + pos.y());
     // turn the kitten
     dir.addAngle(rand_between(-1, 1)*typ.TURN_SPEED*t_multiplier);

@@ -107,7 +107,7 @@ function Cloud(init_type, init_pos, init_dir, bonus_speed)
     if(speed.x() || speed.y())
     {
       if(speed.norm2() > 0.01)
-	speed.scale(1-typ.FRICTION[cloud_type]*t_multiplier);
+	speed.scale(1-Math.pow(typ.FRICTION,t_multiplier));
       else
 	speed.setNorm(0.0);
     }

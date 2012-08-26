@@ -164,7 +164,7 @@ function Player(x, y)
     if(speed.x() || speed.y())
     {
       if(speed.norm2() > 0.01)
-	speed.scale(1-typ.FRICTION*t_multiplier);
+	speed.scale(1-Math.pow(typ.FRICTION,t_multiplier));
       else
 	speed.setNorm(0.0);
     }
