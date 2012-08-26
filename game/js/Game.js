@@ -1,6 +1,7 @@
 /** @author William J. Dyce */
 
 /*
+"SURPRISE CAT SECKS!"
 Kitten-burning game made for Ludum Dare #24 ("Evolution").
 Copyright (C) 2012 William James Dyce
 
@@ -17,6 +18,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 
 /*** GAME CLASS ***/
 

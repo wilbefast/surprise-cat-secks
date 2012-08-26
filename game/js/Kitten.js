@@ -1,6 +1,7 @@
 /** @author William J. Dyce */
 
 /*
+"SURPRISE CAT SECKS!"
 Kitten-burning game made for Ludum Dare #24 ("Evolution").
 Copyright (C) 2012 William James Dyce
 
@@ -204,11 +205,11 @@ function Kitten(mum_resist, dad_resist, mum_pos)
     
     
     /* DEBUG */
-    context.fillStyle = "rgb(0, 0, 0)";
+    /*context.fillStyle = "rgb(0, 0, 0)";
     context.font = "20pt cube";
     context.textAlign = "center";
     context.textBaseline = "middle";
-    context.fillText(Math.floor(hitpoints), pos.x(), pos.y());
+    context.fillText(Math.floor(hitpoints), pos.x(), pos.y());*/
   }
   
   obj.update = function(game, t_multiplier)
