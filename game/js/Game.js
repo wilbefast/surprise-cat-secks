@@ -54,8 +54,6 @@ Game.STARTING_KITTENS = 15;
 Game.KITTEN_T = 0;
 Game.PLAYER_T = 1;
 Game.CLOUD_T = 2;
-// images
-Game.OUTLINE = load_image("outline2.png");
 // colours, fonts, line widths, etc
 Game.C_BACKGROUND = "rgb(186, 186, 100)";
 Game.C_TEXT = "rgb(69, 69, 155)";
