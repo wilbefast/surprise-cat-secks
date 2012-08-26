@@ -43,7 +43,8 @@ Player.BODY_COLOUR = "rgb(34, 34, 77)";
 Player.OUTLINE_COLOUR = "rgb(11, 11, 11)"; 
 Player.OUTLINE_WIDTH = 1;
 Player.GUN_COLOUR = "rgb(22, 22, 22)";
-Player.GUN_WIDTH = 3;
+Player.GUN_WIDTH = 4;
+Player.GUN_STRIP_WIDTH = Player.GUN_WIDTH/2;
 
 
 /// INSTANCE ATTRIBUTES/METHODS
@@ -100,12 +101,7 @@ function Player(x, y)
   {
     // wait a short delay in between changes
     if(wpn_change_timer > 0)
-    {
-      console.log("new change possible in " + wpn_change_timer);
       return;
-    }
-    
-    console.log("weapon changing " + weapon_type + " + " + delta);
     
     // change weapon and reset timer
     weapon_type += delta || 1;
@@ -120,14 +116,29 @@ function Player(x, y)
   
   obj.draw = function()
   {
-    context.fillStyle = Game.C_TEXT;
+    // draw underlay to show which weapon is selected
+    var keyboard_use = (1.0 - Game.INSTANCE.getCursorUse());
+    if(keyboard_use != 0.0)
+    {
+      context.strokeStyle = context.strokeStyle = Cloud.COLOUR[weapon_type] 
+			      + keyboard_use + ")";
+      context.lineWidth = 8;
+      context.strokeRect(pos.x()-typ.SIZE, pos.y()-typ.SIZE, 
+		    typ.SIZE*2, typ.SIZE*2); 
+    }
     
     // draw gun
     context.beginPath();
-    context.strokeStyle = typ.GUN_COLOUR;
-    context.lineWidth = typ.GUN_WIDTH;
-    context.moveTo(pos.x(), pos.y());
-    context.lineTo(nozzle_pos.x(), nozzle_pos.y());
+      context.strokeStyle = typ.GUN_COLOUR;
+      context.lineWidth = typ.GUN_WIDTH;
+      context.moveTo(pos.x(), pos.y());
+      context.lineTo(nozzle_pos.x(), nozzle_pos.y());
+    context.stroke();
+    context.beginPath();
+      context.strokeStyle = Cloud.COLOUR[weapon_type] + "1)";
+      context.lineWidth = typ.GUN_STRIP_WIDTH;
+      context.moveTo(pos.x(), pos.y());
+      context.lineTo(nozzle_pos.x(), nozzle_pos.y());
     context.stroke();
     
     // draw body and outline

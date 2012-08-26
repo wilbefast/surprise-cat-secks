@@ -274,7 +274,6 @@ function Kitten(mum_resist, dad_resist, mum_pos)
     {
       typ.number--;
       typ.saturation = (typ.number/typ.MAX_NUMBER);
-      console.log("kill!");
       return true;
     }
     else
