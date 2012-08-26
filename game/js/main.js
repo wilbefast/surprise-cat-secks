@@ -20,11 +20,16 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 var next_tick = 0, missed_ticks = 0, this_tick = 0;
 
+function init_timing()
+{
+  // The future is now!
+  next_tick = (new Date()).getTime();
+}
+
 function wait(f)
 {
   // Get the current time-stamp
-  var date = new Date();
-  this_tick = date.getTime();
+  this_tick = (new Date()).getTime();
 
   // If it's not yet time for the next update, wait a while
   if (this_tick < next_tick)
@@ -79,6 +84,7 @@ function loading_screen()
   {
     // create the game object
     Game.INSTANCE = new Game();
+    init_timing();
     update_loop();
   }
     

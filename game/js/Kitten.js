@@ -23,18 +23,26 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 /// CLASS VARIABLES/CONSTANTS
 Kitten.SIZE = 16;
 Kitten.HALF_SIZE = Kitten.SIZE / 2;
-// characteristics
-Kitten.MAX_MUTATION = 0.1;
-Kitten.MAX_HEALTH = 10000000;
+// movement
 Kitten.TURN_SPEED = 0.1;
 Kitten.MOVE_SPEED = 1.0;
+// hitpoints
+Kitten.MAX_HITPOINTS = 100;
+Kitten.HITPOINTS_REGEN = 0.9;
+// repoduction
+Kitten.MAX_MUTATION = 0.1;
 // counters
 Kitten.number = 0;
+Kitten.saturation = 0.0;
 Kitten.MAX_NUMBER = 50;
-// debuff effects
-Kitten.MAX_HEAT_ABS = 80;
-Kitten.HEAT_LOSS = 1.3;
-
+// heat and cold
+Kitten.MAX_HEAT_ABS = 50;
+Kitten.HEAT_DAMAGE = 0.04;
+Kitten.HEAT_LOSS = Kitten.MAX_HEAT_ABS/40;
+// poison from nerve-gas
+Kitten.MAX_POISON = 50;
+Kitten.POISON_DAMAGE = 0.01;
+Kitten.POISON_DISSIPATION = Kitten.MAX_POISON/50;
 
 /// INSTANCE ATTRIBUTES/METHODS
 function Kitten(parent_resist)
@@ -52,9 +60,11 @@ function Kitten(parent_resist)
   // V2: current direction
       dir = new V2(0.0, 0.0),
   // int: remaining hitpoints
-      hitpoints = typ.MAX_HEALTH,	
+      hitpoints = typ.MAX_HITPOINTS,	
   // int: body-heat, where positive means burning and negative freezing
-      heat = 0,
+      heat = 50,
+  // int: poison amount
+      poison = 0,
   // [r, g, b]: resistance to fire, nerve-gas and nitro, between 0 and 1
       resist = new Array(),
   // string: "rgb(r,g,b)" format string corresponding to resistances
@@ -140,25 +150,59 @@ function Kitten(parent_resist)
   
   obj.update = function(game, t_multiplier)
   { 
+    //console.log("hp="+Math.floor(hitpoints)+", heat="+Math.floor(heat)+", poison="+Math.floor(poison));
+    
     // slow down if cold, speed up if hot
     var speed = typ.MOVE_SPEED * t_multiplier;
     if(heat != 0)
       speed *= (1.0 + heat/typ.MAX_HEAT_ABS);
     
-    // decrease heat over time
-    var heat_loss = typ.HEAT_LOSS * t_multiplier;
-    if(Math.abs(heat) < heat_loss)
-      heat = 0;
-    else
-      heat -= heat_loss * sign(heat);
+    // regenerate health
+    if(!heat && !poison && hitpoints < typ.MAX_HITPOINTS)
+    {
+      // faster regenerate the fewer kittens there are
+      var hitpoints_regen 
+	= typ.HITPOINTS_REGEN * t_multiplier * (1.0-typ.saturation);
+      if(hitpoints > typ.MAX_HITPOINTS - hitpoints_regen)
+	hitpoints = typ.MAX_HITPOINTS;
+      else
+	hitpoints += hitpoints_regen;
+    }
+    // burn or freeze
+    else if(heat)
+    {
+      
+      // take damage
+      var heat_damage = typ.HEAT_DAMAGE * t_multiplier;
+      hitpoints -= heat_damage;
+      
+      // decrease heat over time
+      var heat_loss = typ.HEAT_LOSS * t_multiplier;
+      if(Math.abs(heat) < heat_loss)
+	heat = 0;
+      else
+	heat -= heat_loss * sign(heat);
+    }
+    // poison dissipation
+    else if(poison)
+    {
+      // take damage
+      var poison_damage = typ.POISON_DAMAGE * t_multiplier;
+      hitpoints -= poison_damage;
+      
+      // decrease heat over time
+      var poison_dissipation = typ.POISON_DISSIPATION * t_multiplier;
+      if(poison < poison_dissipation)
+	poison = 0;
+      else
+	poison -= poison_dissipation;
+    }
     
-    //console.log("pre update" + pos.x() + "," + pos.y());
     // move the kitten
     pos.addXY(dir.x()*speed, dir.y()*speed);
-    //console.log("post update" + pos.x() + "," + pos.y());
+    
     // turn the kitten
     dir.addAngle(rand_between(-1, 1)*typ.TURN_SPEED*t_multiplier);
-    //console.log("post turn" + dir.x() + "," + dir.y());
     
     // lap around
     lap_around(pos, typ.HALF_SIZE);   
@@ -166,7 +210,8 @@ function Kitten(parent_resist)
     // destroy this object if its hitpoints fall too low
     if(hitpoints <= 0)
     {
-      Kitten.number--;
+      typ.number--;
+      typ.saturation = (typ.number/typ.MAX_NUMBER);
       return true;
     }
     else
@@ -187,9 +232,15 @@ function Kitten(parent_resist)
     }
     
   }
+  
+  
+  /* UPDATE COUNTERS */
+  
+  typ.number++;
+  typ.saturation = (typ.number/typ.MAX_NUMBER);
    
-    
+  
   /* RETURN INSTANCE */
-  Kitten.number++;
+  
   return obj;
 }

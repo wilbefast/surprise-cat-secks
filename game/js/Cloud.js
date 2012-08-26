@@ -33,7 +33,7 @@ Cloud.MAX_SIZE = [128, 256, 96];
 Cloud.SPEED = [2.4, 2.2, 2.6];
 Cloud.FRICTION = [0.01, 0.017, 0.004];
 // damage
-Cloud.BASE_DAMAGE = [5.6, 7.3, 4.4];
+Cloud.BASE_DAMAGE = [5.6, 3.2, 4.4];
 // colour
 Cloud.COLOUR = ["rgba(255, 255, 0,", "rgba(0, 255, 127,", "rgba(0, 127, 255,"]
 
