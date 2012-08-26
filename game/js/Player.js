@@ -32,9 +32,9 @@ Player.SPEED_MAX_2 = Math.pow(Player.SPEED_MAX, 2);
 Player.SPEED_MAX_INV = 1.0 / Player.SPEED_MAX;
 Player.FRICTION = Player.SPEED_MAX / 16.0;
 Player.TURN_SPEED = 0.05;
-Player.FACING_CHANGE_TIME = 5;
+Player.FACING_CHANGE_TIME = 3;
 // weapons
-Player.RELOAD_TIME = 21;
+Player.RELOAD_TIME = 17;
 
 /// INSTANCE ATTRIBUTES/METHODS
 
@@ -48,10 +48,21 @@ function Player(x, y)
   var obj = this, typ = Player;
   
   // true attributes
-  var pos,		// V2: position
-      facing,		// {desired=V2, actual=V2, change_timer=real}: aim
-      speed,		// V2: vertical and horizontal speed
-      reloading;	// real: updates till gun is reloaded
+  
+  // V2: position
+  var pos = new V2(),	
+  // {desired=V2, actual=V2, change_timer=real}: aim
+      facing = new Object,
+  // V2: vertical and horizontal speed
+      speed = new V2(),	
+  // real: updates till gun is reloaded
+      reloading = 0;	
+  
+  // initialise from parameters
+  pos.setXY((x || 0.0), (y || 0.0));
+  // facing, straight down by default
+  facing.desired = new V2(0, -1);
+  facing.actual = new V2(0, -1);      
       
   /* SUBROUTINES 
     var f = function(p1, ... ) { } 
@@ -104,9 +115,10 @@ function Player(x, y)
     if(speed.x() || speed.y())
       speed.addNorm(-typ.FRICTION);
     
-    
     // update position
     pos.addXY(speed.x()*t_multiplier, speed.y()*t_multiplier);
+    
+    // lap around the edges of the screen
     lap_around(pos, typ.HALF_SIZE);    
   }
   
@@ -118,7 +130,7 @@ function Player(x, y)
 	reloading -= t_multiplier;
       else
       {
-	Game.INSTANCE.addThing(new Spray(pos, facing.actual, speed));
+	Game.INSTANCE.addThing(new Cloud(pos, facing.actual, speed));
 	reloading = typ.RELOAD_TIME;
       }
     }
@@ -150,20 +162,10 @@ function Player(x, y)
     doMove(game.getKDirection(), game.isKShoot(), t_multiplier);
     doShoot(game.isKShoot(), t_multiplier);
   }
-    
-  /* INITIALISE */
   
-  // position
-  pos = new V2();
-  // facing, straight down by default
-  facing = new Object;
-  facing.desired = new V2(0, -1);
-  facing.actual = new V2(0, -1);
-  // speed
-  speed = new V2();
-  pos.setXY((x || 0.0), (y || 0.0));
-  // weapons
-  reloading = 0;
+  obj.getPosition = function() { return pos; }
+  
+  obj.getRadius = function() { return typ.HALF_SIZE; }
   
   /* RETURN THE INSTANCE */
   return obj;

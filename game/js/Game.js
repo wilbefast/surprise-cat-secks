@@ -78,10 +78,14 @@ function Game()
   // reset the game to its initial state
   var reset = function()
   {
-    // player character
-    player = new Player(canvas.width/2, canvas.height/2);
     // object management
     things = new Array();
+    things.push(new Kitten());
+    //things.push(new Kitten());
+    // player character
+    player = new Player(canvas.width/2, canvas.height/2);
+    things.push(player);
+
     // input handling
     k_direction = new V2();
     key_left = k_right = k_up = k_down = k_shoot = false;
@@ -96,7 +100,7 @@ function Game()
     {
       // update objects, save update result
       var deleteThing 
-		= (things[i] == null || things[i].update(this, t_multiplier));
+		= (things[i] == null || things[i].update(obj, t_multiplier));
       // delete object if the update returns true
       if(deleteThing)
       {
@@ -107,6 +111,12 @@ function Game()
       else
       {
 	// generate events for this object
+	for(j = i+1; j < things.length; j++)
+	  if(things[j] != null && areColliding(things[i], things[j]))
+	  {
+	    
+	  }
+		  
       }
     }
     // delete the indices in the cleanup list
@@ -152,6 +162,7 @@ function Game()
   // getters
   obj.getKDirection = function() { return k_direction; }
   obj.isKShoot = function() { return k_shoot; }
+  obj.getPlayer = function() { return player; }
   
   // modification
   obj.addThing = function(new_thing)
@@ -161,9 +172,8 @@ function Game()
   
   obj.injectUpdate = function(t_multiplier)
   {
-    // update objects
+    // update game objects
     updateThings(t_multiplier);
-    player.update(this, t_multiplier);
   }
  
   obj.injectDraw = function()
@@ -176,7 +186,6 @@ function Game()
     for(i = 0; i < things.length; i++)
       if(things[i] != null)	// uber-rare but did happen... once o_O
 	things[i].draw();
-    player.draw();
   }
   
   obj.injectMouseDown = function(x, y) { /* not used */ }

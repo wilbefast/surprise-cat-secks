@@ -18,30 +18,37 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-/*** CLASS representing a spray of flames, liquid-nitrogen or nerve-gas ***/
+/*** CLASS representing a cloud of flames, liquid-nitrogen or nerve-gas ***/
 
 /// CLASS VARIABLES/CONSTANTS
 // aging
-Spray.AGING_SPEED = 0.008;
-Spray.MAX_SIZE = 128;
+Cloud.AGING_SPEED = 0.012;
+Cloud.MAX_SIZE = 128;
 // speed
-Spray.SPEED = 2.4;
+Cloud.SPEED = 2.4;
 
 /// INSTANCE ATTRIBUTES/METHODS
-function Spray(init_pos, init_dir, bonus_speed)
+function Cloud(init_pos, init_dir, bonus_speed)
 {
   /* ATTRIBUTES 
   var a = x; 
   */
   
   // receiver 
-  var obj = this, typ = Spray;
+  var obj = this, typ = Cloud;
   
   // real attributes
-  var pos,	// V2: current position
-      speed,	// V2: velocity
-      age,	// real: between 0 (birth) and 1 (death)
-      size;	// real: between 0 (birth) and typ.MAX_SIZE (death)
+  var pos = new V2(init_pos.x(), init_pos.y()),	
+  // V2: current position
+      speed = new V2(init_dir.x(), init_dir.y()),	
+  // V2: velocity
+      age = 0.0,	
+  // real: between 0 (birth) and 1 (death)
+      size = 0.0,
+      half_size = 0.0;
+  // real: between 0 (birth) and typ.MAX_SIZE (death)
+  speed.scale(typ.SPEED);
+  speed.addV2(bonus_speed);
   
   /* SUBROUTINES 
   var f = function(p1, ... ) { } 
@@ -54,7 +61,7 @@ function Spray(init_pos, init_dir, bonus_speed)
   obj.draw = function()
   {
     context.fillStyle = "rgba(255, 255, 0," + (1.0-age) + ")";
-    context.fillRect(pos.x()-size/2, pos.y()-size/2, size, size);
+    context.fillRect(pos.x()-half_size, pos.y()-half_size, size, size);
   }
   
   obj.update = function(game, t_multiplier)
@@ -67,27 +74,18 @@ function Spray(init_pos, init_dir, bonus_speed)
     if(age >= 1.0)
       return true;
     size = typ.MAX_SIZE * age;
+    half_size = size * 0.5;
     
-    // lap around
-    lap_around(pos, size/2);   
+    // lap around the edges of the screen
+    lap_around(pos, half_size);   
     
     // don't destroy this object
     return false;
   }
-    
-  /* INITIALISE */
   
-  // position
-  pos = new V2();
-  pos.setV2(init_pos);
-  // speed
-  speed = new V2();
-  speed.setV2(init_dir);
-  speed.scale(typ.SPEED);
-  speed.addV2(bonus_speed);
-  // size and age
-  age = 0.0;
-  size = 0.0;
+  obj.getPosition = function() { return pos; }
+  
+  obj.getRadius = function() { return half_size; }
   
   /* RETURN INSTANCE */
   return obj;

@@ -61,6 +61,14 @@ function V2(init_x, init_y)
     return norm;
   }
   
+  obj.norm2 = function()
+  {
+    if(norm < 0)
+      return (x*x + y*y);
+    else
+      return (norm*norm);
+  }
+  
   // setters
   obj.setXY = function(new_x, new_y)
   {
@@ -111,7 +119,10 @@ function V2(init_x, init_y)
   {
     obj.setXY(x + v.x(), y + v.y());
   }
-  
+  obj.subV2 = function(v)
+  {
+    obj.setXY(x - v.x(), y - v.y());
+  }  
   obj.scale = function(amount)
   {
     x *= amount;

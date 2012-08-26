@@ -18,9 +18,27 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+var areColliding = function(a, b)
+{
+  var span = new V2();
+    span.setV2(a.getPosition());
+    span.subV2(b.getPosition());
+  return (span.norm2() < Math.pow(a.getRadius() + b.getRadius(), 2));
+}
+
 var sign = function(x)
 {
   return (x>0) ? 1 : ((x<0) ? -1 : 0);
+}
+
+function rand_between(x, y)
+{
+  return Math.random()*(Math.abs(x-y)) + Math.min(x,y);
+}
+
+function rand_sign()
+{
+  return (Math.random() < 0.5) ? -1 : 1;
 }
 
 var lap_around = function(pos, half_size)
