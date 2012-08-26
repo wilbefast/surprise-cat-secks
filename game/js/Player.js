@@ -50,9 +50,10 @@ function Player(x, y)
   // true attributes
   
   // V2: position
-  var pos = new V2(),	
+  var pos = new V2(),
   // {desired=V2, actual=V2, change_timer=real}: aim
       facing = new Object,
+      nozzle_pos = new V2(),
   // V2: vertical and horizontal speed
       speed = new V2(),	
   // real: updates till gun is reloaded
@@ -62,7 +63,9 @@ function Player(x, y)
   pos.setXY((x || 0.0), (y || 0.0));
   // facing, straight down by default
   facing.desired = new V2(0, -1);
-  facing.actual = new V2(0, -1);      
+  facing.actual = new V2(0, -1); 
+  nozzle_pos.setXY(pos.x() + typ.GUN_LENGTH * facing.actual.x(), 
+		   pos.y() + typ.GUN_LENGTH * facing.actual.y());
       
   /* SUBROUTINES 
     var f = function(p1, ... ) { } 
@@ -103,12 +106,16 @@ function Player(x, y)
       facing.change_timer = typ.FACING_CHANGE_TIME;
     
     // interpolate aqual angle towards desired angle
-    if(facing.actual.dist2(facing.desired) < 0.01)
-      facing.actual.setV2(facing.desired);
-    else
+    if(facing.actual.x() != facing.desired.x() 
+    || facing.actual.y() != facing.desired.y())
     {
-      var turn_dir = (facing.actual.det(facing.desired) > 0.0) ? 1 : -1
-      facing.actual.addAngle(typ.TURN_SPEED*turn_dir);
+      if(facing.actual.dist2(facing.desired) < 0.01)
+	facing.actual.setV2(facing.desired);
+      else
+      {
+	var turn_dir = (facing.actual.det(facing.desired) > 0.0) ? 1 : -1
+	facing.actual.addAngle(typ.TURN_SPEED*turn_dir);
+      }
     }
     
     // apply friction
@@ -120,6 +127,10 @@ function Player(x, y)
     
     // lap around the edges of the screen
     lap_around(pos, typ.HALF_SIZE);    
+    
+    // update nozzle location cache
+    nozzle_pos.setXY(pos.x() + typ.GUN_LENGTH * facing.actual.x(), 
+		    pos.y() + typ.GUN_LENGTH * facing.actual.y());
   }
   
   var doShoot = function(shoot, t_multiplier)
@@ -130,7 +141,7 @@ function Player(x, y)
 	reloading -= t_multiplier;
       else
       {
-	Game.INSTANCE.addThing(new Cloud(pos, facing.actual, speed));
+	Game.INSTANCE.addThing(new Cloud(nozzle_pos, facing.actual, speed));
 	reloading = typ.RELOAD_TIME;
       }
     }
@@ -141,6 +152,11 @@ function Player(x, y)
     (obj.f = function(p1, ... ) { }
   */
   
+  // getters
+  obj.getPosition = function() { return pos; }
+  obj.getRadius = function() { return typ.HALF_SIZE; }
+  
+  // injections
   obj.draw = function()
   {
     context.fillStyle = Game.C_TEXT;
@@ -148,8 +164,7 @@ function Player(x, y)
     // draw gun
     context.beginPath();
     context.moveTo(pos.x(), pos.y());
-    context.lineTo(pos.x() + typ.GUN_LENGTH*facing.actual.x(), 
-		   pos.y() + typ.GUN_LENGTH*facing.actual.y());
+    context.lineTo(nozzle_pos.x(), nozzle_pos.y());
     context.stroke();
     
     // draw character
@@ -163,9 +178,7 @@ function Player(x, y)
     doShoot(game.isKShoot(), t_multiplier);
   }
   
-  obj.getPosition = function() { return pos; }
-  
-  obj.getRadius = function() { return typ.HALF_SIZE; }
+  obj.collision = function() { }
   
   /* RETURN THE INSTANCE */
   return obj;

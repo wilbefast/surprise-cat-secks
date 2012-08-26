@@ -58,6 +58,11 @@ function Cloud(init_pos, init_dir, bonus_speed)
     (obj.f = function(p1, ... ) { }
   */
   
+  // getters
+  obj.getPosition = function() { return pos; }
+  obj.getRadius = function() { return half_size; }
+  
+  // injections
   obj.draw = function()
   {
     context.fillStyle = "rgba(255, 255, 0," + (1.0-age) + ")";
@@ -83,9 +88,8 @@ function Cloud(init_pos, init_dir, bonus_speed)
     return false;
   }
   
-  obj.getPosition = function() { return pos; }
+  obj.collision = function() { }
   
-  obj.getRadius = function() { return half_size; }
   
   /* RETURN INSTANCE */
   return obj;

@@ -24,6 +24,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 Kitten.SIZE = 16;
 Kitten.HALF_SIZE = Kitten.SIZE / 2;
 Kitten.MAX_MUTATION = 0.1;
+Kitten.MAX_HEALTH = 100;
+Kitten.TURN_SPEED = 0.1;
 
 
 /// INSTANCE ATTRIBUTES/METHODS
@@ -84,15 +86,28 @@ function Kitten(parent_resist)
   }
   
   obj.update = function(game, t_multiplier)
-  {
+  { 
+    //console.log("pre update" + pos.x() + "," + pos.y());
     // move the kitten
-    //pos.addXY(dir.x()*t_multiplier, dir.y()*t_multiplier);
+    pos.addXY(dir.x()*t_multiplier, dir.y()*t_multiplier);
+    //console.log("post update" + pos.x() + "," + pos.y());
+    // turn the kitten
+    dir.addAngle(rand_between(-1, 1)*typ.TURN_SPEED);
+    //console.log("post turn" + dir.x() + "," + dir.y());
     
     // lap around
     lap_around(pos, typ.HALF_SIZE);   
     
-    // don't destroy this object
-    return false;  
+    // destroy this object if its hitpoints fall too low
+    return (health <= 0);  
+  }
+  
+  obj.collision = function(other)
+  {
+    dir.setV2(pos);
+    dir.subV2(other.getPosition());
+    dir.normalise();
+    health -= 1;
   }
    
   obj.getPosition = function() { return pos; }

@@ -20,10 +20,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 var areColliding = function(a, b)
 {
-  var span = new V2();
-    span.setV2(a.getPosition());
-    span.subV2(b.getPosition());
-  return (span.norm2() < Math.pow(a.getRadius() + b.getRadius(), 2));
+  return (a.getPosition().dist2(b.getPosition()) 
+	  < Math.pow(a.getRadius() + b.getRadius(), 2));
 }
 
 var sign = function(x)

@@ -51,6 +51,8 @@ Game.K_O = 'O'.charCodeAt(0);		// dvorak
 // other keys
 Game.K_CTRL = 17;
 Game.K_SPACE = 32;
+// gameplay constants
+Game.STARTING_KITTENS = 15;
 
 
 /// INSTANCE ATTRIBUTES/METHODS
@@ -80,8 +82,10 @@ function Game()
   {
     // object management
     things = new Array();
-    things.push(new Kitten());
-    //things.push(new Kitten());
+    for(var i = 0; i < typ.STARTING_KITTENS; i++)
+    {
+      things.push(new Kitten());
+    }
     // player character
     player = new Player(canvas.width/2, canvas.height/2);
     things.push(player);
@@ -98,9 +102,9 @@ function Game()
     var cleanUp = new Array();
     for(i = 0; i < things.length; i++)
     {
+      var a = things[i];
       // update objects, save update result
-      var deleteThing 
-		= (things[i] == null || things[i].update(obj, t_multiplier));
+      var deleteThing = (a == null || a.update(obj, t_multiplier));
       // delete object if the update returns true
       if(deleteThing)
       {
@@ -110,17 +114,20 @@ function Game()
       }
       else
       {
-	// generate events for this object
-	for(j = i+1; j < things.length; j++)
-	  if(things[j] != null && areColliding(things[i], things[j]))
+	// generate events for these objects
+	for(var j = i+1; j < things.length; j++)
+	{
+	  var b = things[j];
+	  if(b != null && areColliding(a, b))
 	  {
-	    
+	    a.collision(b);
+	    b.collision(a);
 	  }
-		  
+	}
       }
     }
     // delete the indices in the cleanup list
-    for(i=0; i < cleanUp.length; i++)
+    for(var i = 0; i < cleanUp.length; i++)
       things.splice(cleanUp[i], 1);
   }
   
@@ -183,7 +190,7 @@ function Game()
     context.fillRect(0,0,canvas.width, canvas.height);
     
     // draw objects
-    for(i = 0; i < things.length; i++)
+    for(var i = 0; i < things.length; i++)
       if(things[i] != null)	// uber-rare but did happen... once o_O
 	things[i].draw();
   }
