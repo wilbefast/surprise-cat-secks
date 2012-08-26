@@ -33,6 +33,7 @@ Kitten.number = 0;
 Kitten.MAX_NUMBER = 50;
 // debuff effects
 Kitten.MAX_HEAT_ABS = 80;
+Kitten.HEAT_LOSS = 1.3;
 
 
 /// INSTANCE ATTRIBUTES/METHODS
@@ -82,7 +83,6 @@ function Kitten(parent_resist)
       g = Math.floor(255*(1.0-resist[1])), 
       b = Math.floor(255*(1.0-resist[2]));
   colour =  "rgb(" + r + "," + g + "," + b + ")";
-  console.log(colour);
   
   /* SUBROUTINES 
   var f = function(p1, ... ) { } 
@@ -119,8 +119,6 @@ function Kitten(parent_resist)
     // cap burn and freeze amounts
     if(Math.abs(heat) > typ.MAX_HEAT_ABS)
       heat = sign(heat)*typ.MAX_HEAT_ABS;
-    
-    console.log("took " + Math.floor(damage) + " damage => down to " + Math.floor(hitpoints) + " with heat = " + Math.floor(heat));
   }
   
   /* METHODS 
@@ -148,6 +146,11 @@ function Kitten(parent_resist)
       speed *= (1.0 + heat/typ.MAX_HEAT_ABS);
     
     // decrease heat over time
+    var heat_loss = typ.HEAT_LOSS * t_multiplier;
+    if(Math.abs(heat) < heat_loss)
+      heat = 0;
+    else
+      heat -= heat_loss * sign(heat);
     
     //console.log("pre update" + pos.x() + "," + pos.y());
     // move the kitten
