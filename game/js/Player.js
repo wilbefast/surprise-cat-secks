@@ -35,6 +35,7 @@ Player.TURN_SPEED = 0.05;
 Player.FACING_CHANGE_TIME = 3;
 // weapons
 Player.RELOAD_TIME = 17;
+Player.WEAPON_CHANGE_TIME = 45;
 // images
 Player.IMG_FACE = load_image("skull_face.png");
 // colours, fonts, line widths, etc
@@ -68,7 +69,9 @@ function Player(x, y)
   // real: updates till gun is reloaded
       reloading = 0,
   // enum in Cloud.NAPALM, Cloud.NERVE_GAS or Cloud.LIQUID NITROGEN
-      weapon_type = Cloud.NAPALM;
+      weapon_type = Cloud.NAPALM,
+  // a short delay prevent mouse-wheel from skipping over weapons
+      wpn_change_timer = 0;
   
   // initialise from parameters
   pos.setXY((x || 0.0), (y || 0.0));
@@ -92,11 +95,26 @@ function Player(x, y)
   obj.getType = function() { return typ; }
   
   // injections
-  obj.change_weapon = function()
+  obj.change_weapon = function(delta)
   {
-    weapon_type++;
+    // wait a short delay in between changes
+    if(wpn_change_timer > 0)
+    {
+      console.log("new change possible in " + wpn_change_timer);
+      return;
+    }
+    
+    console.log("weapon changing " + weapon_type + " + " + delta);
+    
+    // change weapon and reset timer
+    weapon_type += delta || 1;
+    wpn_change_timer = typ.WEAPON_CHANGE_TIME;
+    
+    // lap around weapon-types
     if(weapon_type >= Cloud.N_TYPES)
       weapon_type -= Cloud.N_TYPES;
+    else if(weapon_type < 0)
+      weapon_type += Cloud.N_TYPES;
   }
   
   obj.draw = function()
@@ -213,6 +231,12 @@ function Player(x, y)
 	reloading = typ.RELOAD_TIME;
       }
     }
+    
+    // count down until next weapon-change is allowed
+    if(wpn_change_timer >= t_multiplier)
+      wpn_change_timer -= t_multiplier;
+    else
+      wpn_change_timer = 0;
   }
   
   obj.collision = function(other) { }

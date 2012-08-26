@@ -82,8 +82,6 @@ function loading_screen()
   }
   else
   {
-    // create the game object
-    Game.INSTANCE = new Game();
     init_timing();
     update_loop();
   }
@@ -116,6 +114,15 @@ canvas.onmousemove = function(event)
 {
   Game.INSTANCE.injectMouseMove(event.layerX - canvas.offsetLeft,
 		     event.layerY - canvas.offsetTop);
+  event.stopPropagation();
+}
+
+canvas.onmousewheel = function(event)
+{
+  var event = window.event || event;
+  var delta = Math.max(-1, Math.min(1, (event.wheelDelta || -event.detail)));
+  
+  Game.INSTANCE.injectMouseWheel(delta);
   event.stopPropagation();
 }
 

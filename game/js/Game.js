@@ -21,8 +21,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 /*** GAME CLASS ***/
 
 /// CLASS VARIABLES/CONSTANTS
-// singleton instance
-Game.INSTANCE = null;
 // strings
 Game.TITLE = "Black Dog";
 Game.AUTHOR = "By William 'wilbefast' J.D.";
@@ -108,6 +106,7 @@ function Game()
     m_pos = new V2();
     m_direction = new V2();
     m_shoot = false;
+    m_wheel_offset = 0;
   }
   
   // update dynamic objects (a variable number stored in an array)
@@ -168,7 +167,7 @@ function Game()
 	break;
       case typ.K_ENTER:
 	if(state && !k_wpn_change)
-	  player.change_weapon();
+	  player.change_weapon(1);
 	k_wpn_change = state;
 	break;
     }
@@ -253,6 +252,11 @@ function Game()
       injectMousePos(x, y);
   }
   
+  obj.injectMouseWheel = function(delta)
+  {
+    player.change_weapon(sign(delta));
+  }
+  
   obj.injectKeyDown = function(key)
   {
     injectKeyState(key, true);
@@ -267,3 +271,6 @@ function Game()
   reset();
   return obj;
 }
+
+// singleton instance
+Game.INSTANCE = new Game();
