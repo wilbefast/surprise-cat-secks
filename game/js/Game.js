@@ -46,6 +46,8 @@ Game.K_O = 'O'.charCodeAt(0);		// dvorak
 // other keys
 Game.K_ENTER = 13;
 Game.K_SPACE = 32;
+// mouse
+Game.M_FADE_SPEED = 0.01;
 // gameplay constants
 Game.STARTING_KITTENS = 15;
 // object types
@@ -84,6 +86,7 @@ function Game()
       m_shoot,		// boolean: is the mouse shoot key being pressed?
       m_pos,		// V2: {x,y} position of the mouse
       m_direction,	// V2: {x,y} normalised player->mouse direction
+      m_visible,	// real: value between 0 and 1, move fades if not used
       focus;		// boolean: pause if we lose focus
       
   /* SUBROUTINES 
@@ -111,6 +114,7 @@ function Game()
     m_direction = new V2();
     m_shoot = false;
     m_wheel_offset = 0;
+    m_visible = 0.0;
     
     // pause or unpause
     focus = true;
@@ -210,7 +214,21 @@ function Game()
   obj.isFocus = function() { return focus; }
   
   // modification
-  obj.setFocus = function(new_focus) { focus = new_focus; }
+  obj.setFocus = function(new_focus) 
+  { 
+    if(focus && !new_focus)
+    {
+      // redraw once without the cursor
+      m_visible = 0;
+      obj.injectDraw();
+      
+      // apply mask
+      context.fillStyle = Game.C_MASK;
+      context.fillRect(0,0,canvas.width, canvas.height);
+    }
+
+    focus = new_focus; 
+  }
   
   obj.addThing = function(new_thing)
   {
@@ -224,12 +242,24 @@ function Game()
     if(!focus)
       return;
     
+    // gradually hide the cursor
+    if(!m_shoot)
+    {
+      if(m_visible > typ.M_FADE_SPEED)
+	m_visible -= typ.M_FADE_SPEED;
+      else
+	m_visible = 0.0;
+    }
+    
     // update game objects
     updateThings(t_multiplier);
   }
  
   obj.injectDraw = function()
   {
+    if(!focus)
+      return;
+
     // clear canvas
     context.fillStyle = Game.C_BACKGROUND;
     context.fillRect(0,0,canvas.width, canvas.height);
@@ -247,12 +277,12 @@ function Game()
       context.strokeStyle = typ.C_OUTLINE[i];
       context.strokeRect(offset, offset, canvas.width-offset*2, canvas.height-offset*2);
     }
-    
-    if(focus)
+  
+    if(m_visible > 0)
     {
       // draw crosshair
       context.beginPath();
-      context.strokeStyle = Cloud.COLOUR[player.getWeapon()] + "1)";
+      context.strokeStyle = Cloud.COLOUR[player.getWeapon()] + m_visible + ")";
       context.moveTo(m_pos.x(), m_pos.y()-typ.CROSSHAIR_SIZE);	// top
       context.lineTo(m_pos.x()+typ.CROSSHAIR_SIZE, m_pos.y());	// right
       context.lineTo(m_pos.x(), m_pos.y()+typ.CROSSHAIR_SIZE);	// bottom
@@ -260,13 +290,6 @@ function Game()
       context.closePath();
       context.stroke();
     }
-    else
-    {
-      // clear canvas
-      context.fillStyle = Game.C_MASK;
-      context.fillRect(0,0,canvas.width, canvas.height);
-    }
-      
   }
   
   obj.injectMouseDown = function(x, y) 
@@ -278,6 +301,9 @@ function Game()
       m_shoot = true;
       m_pos.setXY(x, y);
       injectMouseDir(x, y);
+      
+      // make cursor appear
+      m_visible = 1.0;
     }
   }
   
@@ -292,9 +318,16 @@ function Game()
     if(!focus)
       return;
     
+    // move cursor
     m_pos.setXY(x, y);
     if(m_shoot)
       injectMouseDir(x, y);
+    
+    // cursor visible only if used
+    if(m_visible < 1.0 - typ.M_FADE_SPEED)
+      m_visible += typ.M_FADE_SPEED;
+    else
+      m_visible = 1.0;
   }
   
   obj.injectMouseWheel = function(delta)

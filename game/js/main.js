@@ -45,7 +45,8 @@ function wait(f)
   }
 
   // Calculate when the next update should be
-  next_tick = this_tick + (1000 / Game.MAX_FPS);
+  var fps = Game.INSTANCE.isFocus() ? Game.MAX_FPS : (Game.MAX_FPS/10);
+  next_tick = this_tick + (1000 / fps);
 }
 
 function update_loop()
@@ -97,11 +98,16 @@ function main()
 
 /* INPUT HANDLING -- CANVAS */
 
+canvas.onselectstart = function () { return false; }	// don't select text
+canvas.onselect = function () { return false; }		// don't select text
+
 canvas.onmousedown = function(event)
 {
   Game.INSTANCE.injectMouseDown(event.layerX - canvas.offsetLeft,
 		      event.layerY - canvas.offsetTop);
   event.stopPropagation();
+  
+  return false;	// don't select text
 }
 
 canvas.onmouseup = function(event)
@@ -149,10 +155,6 @@ document.onmousedown = function(e)
   // outside of the canvas ;)
   Game.INSTANCE.setFocus(false);
 }
-
-// don't select text from the canvas!
-document.onselectstart = function(){ return !Game.INSTANCE.isFocus(); }
-
 
 /* LAUNCH THE APPLICATION */
 
