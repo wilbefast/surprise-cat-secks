@@ -88,6 +88,10 @@ function V2(init_x, init_y)
   {
     obj.setXY(v.x(), v.y());
   }
+  obj.setFromTo = function(v, w)
+  {
+    obj.setXY(w.x()-v.x(), w.y()-v.y());
+  }
   
   obj.setNorm = function(new_norm)
   {

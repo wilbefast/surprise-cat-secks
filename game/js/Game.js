@@ -53,6 +53,10 @@ Game.K_ENTER = 13;
 Game.K_SPACE = 32;
 // gameplay constants
 Game.STARTING_KITTENS = 15;
+// object types
+Game.KITTEN_T = 0;
+Game.PLAYER_T = 1;
+Game.CLOUD_T = 2;
 
 
 /// INSTANCE ATTRIBUTES/METHODS
@@ -66,13 +70,16 @@ function Game()
   var obj = this, typ = Game;
   
   // true attributes
-  var things,		// list of dynamic game-objects
-      player,		// the player-character object
-      k_left, k_right, 	// booleans for left and right arrow keys
-      k_up, key_down,	// booleans for up and down arrow keys
-      k_direction,	// {x,y} reprenting direction pressed on key-pad
-      k_shoot,		// boolean representing whether shoot key is pressed
-      k_wpn_change;	// is the weapon change key being pressed?
+  var things,		// Array: [a, b, c, d, ...] list of dynamic game-objects
+      player,		// Player: the player-character object
+      k_left, k_right, 	// boolean: left and right arrow keys?
+      k_up, key_down,	// boolean: up and down arrow keys?
+      k_direction,	// V2: {x,y} reprenting direction pressed on key-pad
+      k_shoot,		// boolean: is shoot key being pressed?
+      k_wpn_change,	// boolean: is the weapon change key being pressed?
+      m_shoot,		// boolean: is the mouse shoot key being pressed?
+      m_pos,		// V2: {x,y} position of the mouse
+      m_direction;	// V2: {x,y} normalised player->mouse direction
       
   /* SUBROUTINES 
     var f = function(p1, ... ) { } 
@@ -91,9 +98,13 @@ function Game()
     player = new Player(canvas.width/2, canvas.height/2);
     things.push(player);
 
-    // input handling
+    // keyboard
     k_direction = new V2();
-    key_left = k_right = k_up = k_down = k_shoot = false;
+    key_left = k_right = k_up = k_down = k_shoot = k_wpn_change = false;
+    // mouse
+    m_pos = new V2();
+    m_direction = new V2();
+    m_shoot = false;
   }
   
   // update dynamic objects (a variable number stored in an array)
@@ -168,13 +179,25 @@ function Game()
       k_direction.normalise();
   }
   
+  var injectMousePos = function(x, y)
+  {
+    m_pos.setXY(x, y);
+    m_direction.setFromTo(player.getPosition(), m_pos);
+    m_direction.normalise();
+  }
+  
   /* METHODS 
     (obj.f = function(p1, ... ) { }
   */
   
   // getters
-  obj.getKDirection = function() { return k_direction; }
-  obj.isKShoot = function() { return k_shoot; }
+  obj.getInputMove = function() 
+  { 
+    return k_direction; 
+  }
+  obj.isInputShoot = function() { return (k_shoot||m_shoot); }
+  obj.isInputMouse = function() { return m_shoot; }
+  obj.getInputMouse = function() { return m_direction; }
   obj.getPlayer = function() { return player; }
   
   // modification
@@ -201,9 +224,22 @@ function Game()
 	things[i].draw();
   }
   
-  obj.injectMouseDown = function(x, y) { /* not used */ }
+  obj.injectMouseDown = function(x, y) 
+  { 
+    m_shoot = true;
+    injectMousePos(x, y);
+  }
   
-  obj.injectMouseUp = function(x, y) { /* not used*/ }
+  obj.injectMouseUp = function(x, y) 
+  { 
+    m_shoot = false;
+  }
+  
+  obj.injectMouseMove = function(x, y)
+  {
+    if(m_shoot)
+      injectMousePos(x, y);
+  }
   
   obj.injectKeyDown = function(key)
   {

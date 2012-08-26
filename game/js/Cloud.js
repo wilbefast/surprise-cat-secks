@@ -71,6 +71,7 @@ function Cloud(init_type, init_pos, init_dir, bonus_speed)
   // getters
   obj.getPosition = function() { return pos; }
   obj.getRadius = function() { return half_size; }
+  obj.getType = function() { return typ; }
   
   // injections
   obj.draw = function()
@@ -95,7 +96,7 @@ function Cloud(init_type, init_pos, init_dir, bonus_speed)
     if(speed.x() || speed.y())
     {
       if(speed.norm2() > 0.01)
-	speed.scale(1-typ.FRICTION[cloud_type]);
+	speed.scale(1-typ.FRICTION[cloud_type]*t_multiplier);
       else
 	speed.setNorm(0.0);
     }
@@ -107,8 +108,7 @@ function Cloud(init_type, init_pos, init_dir, bonus_speed)
     return false;
   }
   
-  obj.collision = function() { }
-  
+  obj.collision = function(other) { }
   
   /* RETURN INSTANCE */
   return obj;

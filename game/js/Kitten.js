@@ -23,9 +23,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 /// CLASS VARIABLES/CONSTANTS
 Kitten.SIZE = 16;
 Kitten.HALF_SIZE = Kitten.SIZE / 2;
+// characteristics
 Kitten.MAX_MUTATION = 0.1;
 Kitten.MAX_HEALTH = 100;
 Kitten.TURN_SPEED = 0.1;
+// counters
+Kitten.number = 0;
+Kitten.MAX_NUMBER = 50;
 
 
 /// INSTANCE ATTRIBUTES/METHODS
@@ -74,6 +78,12 @@ function Kitten(parent_resist)
     (obj.f = function(p1, ... ) { }
   */
   
+  // getters
+  obj.getPosition = function() { return pos; }
+  obj.getRadius = function() { return typ.HALF_SIZE; }
+  obj.getType = function() { return typ; }
+  
+  // injections
   obj.draw = function()
   {
     var r = 255*(1.0-resist[0]), 
@@ -92,14 +102,20 @@ function Kitten(parent_resist)
     pos.addXY(dir.x()*t_multiplier, dir.y()*t_multiplier);
     //console.log("post update" + pos.x() + "," + pos.y());
     // turn the kitten
-    dir.addAngle(rand_between(-1, 1)*typ.TURN_SPEED);
+    dir.addAngle(rand_between(-1, 1)*typ.TURN_SPEED*t_multiplier);
     //console.log("post turn" + dir.x() + "," + dir.y());
     
     // lap around
     lap_around(pos, typ.HALF_SIZE);   
     
     // destroy this object if its hitpoints fall too low
-    return (health <= 0);  
+    if(health <= 0)
+    {
+      Kitten.number--;
+      return true;
+    }
+    else
+      return false;
   }
   
   obj.collision = function(other)
@@ -110,10 +126,9 @@ function Kitten(parent_resist)
     health -= 1;
   }
    
-  obj.getPosition = function() { return pos; }
-  
-  obj.getRadius = function() { return typ.HALF_SIZE; }
+
     
   /* RETURN INSTANCE */
+  Kitten.number++;
   return obj;
 }

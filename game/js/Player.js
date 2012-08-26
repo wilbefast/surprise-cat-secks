@@ -72,14 +72,50 @@ function Player(x, y)
   /* SUBROUTINES 
     var f = function(p1, ... ) { } 
   */
-
-  var doMove = function(move, shoot, t_multiplier)
+  
+  /* METHODS 
+    (obj.f = function(p1, ... ) { }
+  */
+  
+  // getters
+  obj.getPosition = function() { return pos; }
+  obj.getRadius = function() { return typ.HALF_SIZE; }
+  obj.getType = function() { return typ; }
+  
+  // injections
+  obj.change_weapon = function()
   {
+    weapon_type++;
+    if(weapon_type >= Cloud.N_TYPES)
+      weapon_type -= Cloud.N_TYPES;
+  }
+  
+  obj.draw = function()
+  {
+    context.fillStyle = Game.C_TEXT;
+    
+    // draw gun
+    context.beginPath();
+    context.moveTo(pos.x(), pos.y());
+    context.lineTo(nozzle_pos.x(), nozzle_pos.y());
+    context.stroke();
+    
+    // draw character
+    context.fillRect(pos.x()-typ.HALF_SIZE, pos.y()-typ.HALF_SIZE, 
+		      typ.SIZE, typ.SIZE);
+  }
+  
+  obj.update = function(game, t_multiplier)
+  {
+    // get useful variables
+    var move = game.getInputMove(), shoot = game.isInputShoot(),
+	use_mouse = game.isInputMouse();
+    
     // apply move commands
     if(move.x() || move.y())
     {
       // reset desired facing
-      if(!shoot 
+      if(!shoot && !use_mouse
       && (move.x() != facing.desired.x() || move.y() != facing.desired.y()))
       {
 	// don't change direction immediately or we'll never face diagonals
@@ -107,6 +143,10 @@ function Player(x, y)
       // reset direction-change timer
       facing.change_timer = typ.FACING_CHANGE_TIME;
     
+    // change facing based on mouse if applicable
+    if(use_mouse)
+      facing.desired.setV2(game.getInputMouse());
+    
     // interpolate aqual angle towards desired angle
     if(facing.actual.x() != facing.desired.x() 
     || facing.actual.y() != facing.desired.y())
@@ -124,7 +164,7 @@ function Player(x, y)
     if(speed.x() || speed.y())
     {
       if(speed.norm2() > 0.01)
-	speed.scale(1-typ.FRICTION);
+	speed.scale(1-typ.FRICTION*t_multiplier);
       else
 	speed.setNorm(0.0);
     }
@@ -138,62 +178,24 @@ function Player(x, y)
     // update nozzle location cache
     nozzle_pos.setXY(pos.x() + typ.GUN_LENGTH * facing.actual.x(), 
 		    pos.y() + typ.GUN_LENGTH * facing.actual.y());
-  }
-  
-  var doShoot = function(shoot, t_multiplier)
-  {
+	
+    // shoot gun if need be
     if(shoot)
     {
+      // make sure gun is loaded
       if(reloading > 0.0)
 	reloading -= t_multiplier;
       else
       {
 	Game.INSTANCE.addThing(new Cloud(weapon_type, nozzle_pos, 
 					 facing.actual, speed));
+	// wait for reload
 	reloading = typ.RELOAD_TIME;
       }
     }
   }
- 
   
-  /* METHODS 
-    (obj.f = function(p1, ... ) { }
-  */
-  
-  // getters
-  obj.getPosition = function() { return pos; }
-  obj.getRadius = function() { return typ.HALF_SIZE; }
-  
-  // injections
-  obj.change_weapon = function()
-  {
-    weapon_type++;
-    if(weapon_type >= Cloud.N_TYPES)
-      weapon_type -= Cloud.N_TYPES;
-  }
-  
-  obj.draw = function()
-  {
-    context.fillStyle = Game.C_TEXT;
-    
-    // draw gun
-    context.beginPath();
-    context.moveTo(pos.x(), pos.y());
-    context.lineTo(nozzle_pos.x(), nozzle_pos.y());
-    context.stroke();
-    
-    // draw character
-    context.fillRect(pos.x()-typ.HALF_SIZE, pos.y()-typ.HALF_SIZE, 
-		      typ.SIZE, typ.SIZE);
-  }
-  
-  obj.update = function(game, t_multiplier)
-  {
-    doMove(game.getKDirection(), game.isKShoot(), t_multiplier);
-    doShoot(game.isKShoot(), t_multiplier);
-  }
-  
-  obj.collision = function() { }
+  obj.collision = function(other) { }
   
   /* RETURN THE INSTANCE */
   return obj;
