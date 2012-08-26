@@ -59,7 +59,7 @@ Game.C_BACKGROUND = "rgb(186, 186, 100)";
 Game.C_TEXT = "rgb(69, 69, 155)";
 Game.C_OUTLINE = ["rgba(69, 69, 155, 0.9)", "rgba(69, 69, 155, 0.6)", 
 		  "rgba(69, 69, 155, 0.3)"];
-Game.C_MASK = "rgba(34, 34, 78, 0.5)";
+Game.C_MASK = "rgba(17, 17, 39, 0.9)";
 Game.OUTLINE_WIDTHS = 10;
 Game.CROSSHAIR_LINE_WIDTH = 3;
 Game.CROSSHAIR_SIZE = 24;
@@ -226,6 +226,13 @@ function Game()
       // apply mask
       context.fillStyle = Game.C_MASK;
       context.fillRect(0,0,canvas.width, canvas.height);
+      
+      // draw "loading" text
+      context.fillStyle = Game.C_BACKGROUND;
+      context.font = "20pt Arial";
+      context.textAlign = "center";
+      context.textBaseline = "middle";
+      context.fillText("Paused", canvas.width/2, canvas.height/2);
     }
 
     focus = new_focus; 
