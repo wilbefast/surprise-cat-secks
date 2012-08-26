@@ -145,9 +145,7 @@ function Kitten(mum_resist, dad_resist, mum_pos)
     
     // apply the damage
     if(damage > 0)
-    {
       hitpoints -= damage;
-    }
     
     // cap burn and freeze amounts
     if(Math.abs(heat) > typ.MAX_HEAT_ABS)
@@ -161,7 +159,7 @@ function Kitten(mum_resist, dad_resist, mum_pos)
     && mate.getHitpoints() >= typ.REPRODUCE_THRESHOLD)
     {
       hitpoints -= typ.REPRODUCE_COST;
-      mate.addHitpoints(-typ.REPODUCE_COST);
+      mate.addHitpoints(-typ.REPRODUCE_COST);
       Game.INSTANCE.addThing(new Kitten(resist, mate.getResistance()), pos);
     }
   }
@@ -202,6 +200,15 @@ function Kitten(mum_resist, dad_resist, mum_pos)
     context.lineWidth = typ.OUTLINE_WIDTH;
     context.strokeStyle = typ.OUTLINE_COLOUR;
     context.strokeRect(pos.x()-half_size, pos.y()-half_size, size, size);
+    
+    
+    
+    /* DEBUG */
+    context.fillStyle = "rgb(0, 0, 0)";
+    context.font = "20pt cube";
+    context.textAlign = "center";
+    context.textBaseline = "middle";
+    context.fillText(Math.floor(hitpoints), pos.x(), pos.y());
   }
   
   obj.update = function(game, t_multiplier)
