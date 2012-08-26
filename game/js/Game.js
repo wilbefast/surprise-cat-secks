@@ -29,8 +29,8 @@ Game.AUTHOR = "By William 'wilbefast' J.D.";
 // timing: maximum number of frames per second
 Game.MAX_FPS = 60;
 // colours
-Game.C_BACKGROUND = 'rgb(211, 211, 211)';
-Game.C_TEXT = 'rgb(44, 44, 44)';
+Game.C_BACKGROUND = 'rgb(186, 186, 100)';
+Game.C_TEXT = 'rgb(69, 69, 155)';
 // left keys
 Game.K_LEFT = 37;
 Game.K_A = 'A'.charCodeAt(0);		// qwerty + dvorak
@@ -57,6 +57,8 @@ Game.STARTING_KITTENS = 15;
 Game.KITTEN_T = 0;
 Game.PLAYER_T = 1;
 Game.CLOUD_T = 2;
+// images
+Game.OUTLINE = load_image("outline.png");
 
 
 /// INSTANCE ATTRIBUTES/METHODS
@@ -222,6 +224,9 @@ function Game()
     for(var i = 0; i < things.length; i++)
       if(things[i] != null)	// uber-rare but did happen... once o_O
 	things[i].draw();
+      
+    // draw outline overlay
+    context.drawImage(typ.OUTLINE, 0, 0);
   }
   
   obj.injectMouseDown = function(x, y) 

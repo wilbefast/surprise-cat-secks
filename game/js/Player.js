@@ -22,7 +22,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 /// CLASS VARIABLES/CONSTANTS
 // size
-Player.SIZE = 16;
+Player.SIZE = 24;
 Player.HALF_SIZE = Player.SIZE / 2;
 Player.GUN_LENGTH = Player.SIZE * 1.5;
 // speed
@@ -35,6 +35,15 @@ Player.TURN_SPEED = 0.05;
 Player.FACING_CHANGE_TIME = 3;
 // weapons
 Player.RELOAD_TIME = 17;
+// images
+Player.IMG_FACE = load_image("skull_face.png");
+// colours, fonts, line widths, etc
+Player.BODY_COLOUR = "rgb(34, 34, 77)"; 
+Player.OUTLINE_COLOUR = "rgb(11, 11, 11)"; 
+Player.OUTLINE_WIDTH = 1;
+Player.GUN_COLOUR = "rgb(22, 22, 22)";
+Player.GUN_WIDTH = 3;
+
 
 /// INSTANCE ATTRIBUTES/METHODS
 
@@ -96,13 +105,24 @@ function Player(x, y)
     
     // draw gun
     context.beginPath();
+    context.strokeStyle = typ.GUN_COLOUR;
+    context.lineWidth = typ.GUN_WIDTH;
     context.moveTo(pos.x(), pos.y());
     context.lineTo(nozzle_pos.x(), nozzle_pos.y());
     context.stroke();
     
-    // draw character
+    // draw body and outline
+    context.fillStyle = typ.BODY_COLOUR;
     context.fillRect(pos.x()-typ.HALF_SIZE, pos.y()-typ.HALF_SIZE, 
-		      typ.SIZE, typ.SIZE);
+		     typ.SIZE, typ.SIZE); 
+    context.strokeStyle = typ.OUTLINE_COLOUR;
+    context.lineWidth = typ.OUTLINE_WIDTH;
+    context.strokeRect(pos.x()-typ.HALF_SIZE, pos.y()-typ.HALF_SIZE, 
+		  typ.SIZE, typ.SIZE);  
+    // draw face
+    context.drawImage(typ.IMG_FACE, pos.x()-typ.HALF_SIZE, pos.y()-typ.HALF_SIZE, 
+		  typ.SIZE, typ.SIZE);
+
   }
   
   obj.update = function(game, t_multiplier)

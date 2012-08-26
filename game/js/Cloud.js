@@ -35,7 +35,7 @@ Cloud.FRICTION = [0.01, 0.017, 0.004];
 // damage
 Cloud.BASE_DAMAGE = [5.6, 3.2, 4.4];
 // colour
-Cloud.COLOUR = ["rgba(255, 255, 0,", "rgba(0, 255, 0,", "rgba(0, 0, 255,"]
+Cloud.COLOUR = ["rgba(255, 255, 0,", "rgba(55, 255, 0,", "rgba(200, 200, 255,"]
 
 /// INSTANCE ATTRIBUTES/METHODS
 function Cloud(init_type, init_pos, init_dir, bonus_speed)

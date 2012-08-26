@@ -48,6 +48,9 @@ Kitten.POISON_DAMAGE = Kitten.POISON_DISSIPATION;
 				      // 1 poison dissipation = 1 damage
 // images
 Kitten.IMG_FACE = load_image("cat_face.png");
+// colours, fonts, line widths, etc
+Kitten.OUTLINE_WIDTH = 1;
+Kitten.OUTLINE_COLOUR = "rgb(34, 34, 77)";
 
 /// INSTANCE ATTRIBUTES/METHODS
 function Kitten(parent_resist)
@@ -168,7 +171,8 @@ function Kitten(parent_resist)
     context.drawImage(typ.IMG_FACE, pos.x()-typ.HALF_SIZE, pos.y()-typ.HALF_SIZE, 
 		     typ.SIZE, typ.SIZE);		     
     // draw outline
-    context.fillStyle = Game.C_TEXT;
+    context.lineWidth = typ.OUTLINE_WIDTH;
+    context.strokeStyle = typ.OUTLINE_COLOUR;
     context.strokeRect(pos.x()-typ.HALF_SIZE, pos.y()-typ.HALF_SIZE, 
 		     typ.SIZE, typ.SIZE);
   }
