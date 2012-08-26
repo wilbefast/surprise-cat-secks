@@ -72,7 +72,7 @@ function loading_screen()
   {
     // draw "loading" text
     context.fillStyle = Game.C_TEXT;
-    context.font = "20pt Mono";
+    context.font = "48pt monospace";
     context.textAlign = "center";
     context.textBaseline = "middle";
     var percent_loaded = 100 - Math.round((left_to_load/total_to_load)*100);

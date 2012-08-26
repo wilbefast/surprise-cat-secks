@@ -273,6 +273,7 @@ function Kitten(mum_resist, dad_resist, mum_pos)
     if(hitpoints <= 0)
     {
       typ.number--;
+      Game.INSTANCE.addKill();
       typ.saturation = (typ.number/typ.MAX_NUMBER);
       return true;
     }

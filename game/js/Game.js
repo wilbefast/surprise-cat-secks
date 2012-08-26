@@ -90,7 +90,8 @@ function Game()
       m_direction,	// V2: {x,y} normalised player->mouse direction
       m_use,		// real: value between 0 and 1, move fades if not used
       focus,		// boolean: pause if we lose focus
-      time;		// time taken to kill/breed all the cats				
+      time,		// time taken to kill/breed all the cats	
+      kills;		// total number of cats killed
       
   /* SUBROUTINES 
     var f = function(p1, ... ) { } 
@@ -119,8 +120,9 @@ function Game()
     m_wheel_offset = 0;
     m_use = 0.0;
     
-    // time, for score
+    // for score
     time = 0.0;
+    kills = 0;
     
     // pause or unpause
     focus = true;
@@ -204,6 +206,54 @@ function Game()
     m_direction.normalise();
   }
   
+  // drawing
+  
+  var draw_outline = function()
+  {
+    // the top box
+    context.fillStyle = Game.C_TEXT;
+    context.fillRect(0, 0, canvas.width, typ.INFOBAR_HEIGHT);
+    // three concentric rectangles of varying sizes
+    context.lineWidth = typ.OUTLINE_WIDTHS;
+    for(var i = 0; i < 3; i++)
+    {
+      var offset = (i+0.5)*typ.OUTLINE_WIDTHS;
+      context.strokeStyle = typ.C_OUTLINE[i];
+      context.strokeRect(offset, offset + typ.INFOBAR_HEIGHT, 
+	canvas.width-offset*2, canvas.height-offset*2 - typ.INFOBAR_HEIGHT);
+    }
+  }
+  
+  var draw_crosshair = function()
+  {
+    // diamond shape
+    context.beginPath();
+    context.strokeStyle = Cloud.COLOUR[player.getWeapon()] + m_use + ")";
+    context.moveTo(m_pos.x(), m_pos.y()-typ.CROSSHAIR_SIZE);	// top
+    context.lineTo(m_pos.x()+typ.CROSSHAIR_SIZE, m_pos.y());	// right
+    context.lineTo(m_pos.x(), m_pos.y()+typ.CROSSHAIR_SIZE);	// bottom
+    context.lineTo(m_pos.x()-typ.CROSSHAIR_SIZE, m_pos.y());	// left
+    context.closePath();
+    context.stroke();
+  }
+  
+  var draw_info = function()
+  {
+    context.fillStyle = "rgb(221,221,221)";
+    context.font = "22pt cube";
+    context.textBaseline = "top";
+    // remaining cats
+      context.textAlign = "left";
+      context.fillText("Cats: " + Kitten.number, typ.INFOBAR_OFFSET, 0);
+    // numer of kills
+      context.textAlign = "center";
+      context.fillText("Kills: " + kills, canvas.width/2, 0);
+    // time taken so far
+      context.textAlign = "right";
+      context.fillText("Time: " + Math.floor(time), 
+		       canvas.width-typ.INFOBAR_OFFSET, 0);
+  }
+  
   /* METHODS 
     (obj.f = function(p1, ... ) { }
   */
@@ -232,6 +282,9 @@ function Game()
       context.fillStyle = Game.C_MASK;
       context.fillRect(0,0,canvas.width, canvas.height);
       
+      // draw the score on top of the mask
+      draw_info();
+      
       // draw "loading" text
       context.fillStyle = Game.C_BACKGROUND;
       context.font = "32pt cube";
@@ -248,12 +301,16 @@ function Game()
     things.push(new_thing);
   }
   
+  obj.addKill = function() { kills++; }
   
   // injections
   obj.injectUpdate = function(t_multiplier)
   {
     if(!focus)
       return;
+    
+    // increment the timer
+    time += t_multiplier/typ.MAX_FPS;
     
     // gradually hide the cursor
     if(!m_shoot)
@@ -283,41 +340,14 @@ function Game()
 	things[i].draw();
       
     // draw outline overlay
-    context.lineWidth = typ.OUTLINE_WIDTHS;
-    for(var i = 0; i < 3; i++)
-    {
-      var offset = (i+0.5)*typ.OUTLINE_WIDTHS;
-      context.strokeStyle = typ.C_OUTLINE[i];
-      context.strokeRect(offset, offset + typ.INFOBAR_HEIGHT, 
-	canvas.width-offset*2, canvas.height-offset*2 - typ.INFOBAR_HEIGHT);
-    }
+    draw_outline();
   
     // draw crosshair
     if(m_use > 0)
-    {
-      context.beginPath();
-      context.strokeStyle = Cloud.COLOUR[player.getWeapon()] + m_use + ")";
-      context.moveTo(m_pos.x(), m_pos.y()-typ.CROSSHAIR_SIZE);	// top
-      context.lineTo(m_pos.x()+typ.CROSSHAIR_SIZE, m_pos.y());	// right
-      context.lineTo(m_pos.x(), m_pos.y()+typ.CROSSHAIR_SIZE);	// bottom
-      context.lineTo(m_pos.x()-typ.CROSSHAIR_SIZE, m_pos.y());	// left
-      context.closePath();
-      context.stroke();
-    }
+      draw_crosshair();
     
     // draw info-bar
-    context.fillStyle = Game.C_TEXT;
-    context.fillRect(0, 0, canvas.width, typ.INFOBAR_HEIGHT);
-    // draw information inside it
-    context.fillStyle = "rgb(221,221,221)";
-    context.font = "22pt cube";
-    context.textBaseline = "top";
-    // remaining cats
-      context.textAlign = "left";
-      context.fillText("Cats: " + Kitten.number, typ.INFOBAR_OFFSET, 0);
-    // time take
-      context.textAlign = "right";
-      context.fillText("Time: " + time, canvas.width-typ.INFOBAR_OFFSET, 0);
+    draw_info();
   }
   
   obj.injectMouseDown = function(x, y) 
