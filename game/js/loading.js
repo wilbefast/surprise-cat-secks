@@ -31,13 +31,13 @@ function load_resource(resource_obj, file_name)
 // simple image-loading API
 function load_image(file_name)
 {
-  load_resource(new Image(), file_name);
+  return load_resource(new Image(), file_name);
 }
 
 // simple audio-loading API
 function load_audio(file_name)
 {
-  load_resource(new Audio(), file_name);
+  return load_resource(new Audio(), file_name);
 }
 
 // simple audio-playing API

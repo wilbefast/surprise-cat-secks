@@ -21,8 +21,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 /*** CLASS representing a fluffy, flammable kitten ***/
 
 /// CLASS VARIABLES/CONSTANTS
+// size
 Kitten.SIZE = 16;
 Kitten.HALF_SIZE = Kitten.SIZE / 2;
+Kitten.PUSH_LENGTH = 2.0;
 // movement
 Kitten.TURN_SPEED = 0.1;
 Kitten.MOVE_SPEED = 1.0;
@@ -44,6 +46,8 @@ Kitten.MAX_POISON = 70;
 Kitten.POISON_DISSIPATION = Kitten.MAX_POISON/90;
 Kitten.POISON_DAMAGE = Kitten.POISON_DISSIPATION; 
 				      // 1 poison dissipation = 1 damage
+// images
+Kitten.IMG_FACE = load_image("cat_face.png");
 
 /// INSTANCE ATTRIBUTES/METHODS
 function Kitten(parent_resist)
@@ -59,18 +63,21 @@ function Kitten(parent_resist)
   // V2: current position
   var pos = new V2(Math.random()*canvas.width, Math.random()*canvas.height),	
   // V2: current direction
-      dir = new V2(0.0, 0.0),
+      dir = new V2(rand_sign(), rand_sign()),
   // int: remaining hitpoints
       hitpoints = typ.MAX_HITPOINTS,	
   // int: body-heat, where positive means burning and negative freezing
-      heat = 50,
+      heat = 0,
   // int: poison amount
       poison = 0,
   // [r, g, b]: resistance to fire, nerve-gas and nitro, between 0 and 1
       resist = new Array(),
   // string: "rgb(r,g,b)" format string corresponding to resistances
       colour = new String();
-
+  
+  // normalise direction vector
+  dir.normalise();
+      
   // initialise resistances
   for(i = 0; i < 3; i++)
   {
@@ -86,7 +93,7 @@ function Kitten(parent_resist)
 	resist[i] = 0;
     }
     else
-      resist[i] = 0;// rand_between(0.0, 1.0); //0;
+      resist[i] =  rand_between(0.0, 1.0);
     
   }
   // cache the colour corresponding to these resistances
@@ -132,6 +139,15 @@ function Kitten(parent_resist)
       heat = sign(heat)*typ.MAX_HEAT_ABS;
   }
   
+  var collision_kitten = function(kitten)
+  {
+  }
+  
+  var push = function(xx, yy)
+  {
+    pos.addXY(xx*typ.PUSH_LENGTH, yy*typ.PUSH_LENGTH);
+  }
+  
   /* METHODS 
     (obj.f = function(p1, ... ) { }
   */
@@ -144,8 +160,16 @@ function Kitten(parent_resist)
   // injections
   obj.draw = function()
   {
+    // draw colour
     context.fillStyle = colour;
     context.fillRect(pos.x()-typ.HALF_SIZE, pos.y()-typ.HALF_SIZE, 
+		     typ.SIZE, typ.SIZE);
+    // draw face
+    context.drawImage(typ.IMG_FACE, pos.x()-typ.HALF_SIZE, pos.y()-typ.HALF_SIZE, 
+		     typ.SIZE, typ.SIZE);		     
+    // draw outline
+    context.fillStyle = Game.C_TEXT;
+    context.strokeRect(pos.x()-typ.HALF_SIZE, pos.y()-typ.HALF_SIZE, 
 		     typ.SIZE, typ.SIZE);
   }
   
@@ -226,7 +250,14 @@ function Kitten(parent_resist)
     {
       case Cloud:
 	collision_cloud(other);
-      break;
+	break;
+      case Player:
+	push(dir.x(), dir.y());
+	break;
+      case Kitten:
+	push(dir.x(), dir.y());
+	collision_kitten(other);
+	break;
     }
     
   }

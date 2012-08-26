@@ -29,8 +29,8 @@ Game.AUTHOR = "By William 'wilbefast' J.D.";
 // timing: maximum number of frames per second
 Game.MAX_FPS = 60;
 // colours
-Game.C_BACKGROUND = 'rgb(255, 0, 0)';
-Game.C_TEXT = 'rgb(0, 0, 128)';
+Game.C_BACKGROUND = 'rgb(211, 211, 211)';
+Game.C_TEXT = 'rgb(44, 44, 44)';
 // left keys
 Game.K_LEFT = 37;
 Game.K_A = 'A'.charCodeAt(0);		// qwerty + dvorak
@@ -52,7 +52,7 @@ Game.K_O = 'O'.charCodeAt(0);		// dvorak
 Game.K_ENTER = 13;
 Game.K_SPACE = 32;
 // gameplay constants
-Game.STARTING_KITTENS = Kitten.MAX_NUMBER;
+Game.STARTING_KITTENS = 15;
 // object types
 Game.KITTEN_T = 0;
 Game.PLAYER_T = 1;

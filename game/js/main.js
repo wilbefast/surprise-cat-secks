@@ -92,8 +92,6 @@ function loading_screen()
 
 function main() 
 {
-  // load your resources here
-  
   // loading screen will launch the game when resources are in memory
   loading_screen();
 }
