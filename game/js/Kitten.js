@@ -280,9 +280,15 @@ function Kitten(mum_resist, dad_resist, mum_pos)
     // destroy this object if its hitpoints fall too low
     if(hitpoints <= 0)
     {
-      typ.number--;
+      // reset counters and saturation cache
       Game.INSTANCE.addKill();
+      typ.number--;
       typ.saturation = (typ.number/typ.MAX_NUMBER);
+      
+      // create special-effects
+      for(var i = 0; i < 3; i++)
+	Game.INSTANCE.addThing(new Stain(pos, 24, "rgba(255,0,0,"));
+      
       return true;
     }
     else

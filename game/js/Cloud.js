@@ -60,9 +60,7 @@ function Cloud(init_type, init_pos, init_dir, bonus_speed)
       size = 0.0,
       half_size = 0.0,
   // enum in Cloud.NAPALM, Cloud.NERVE_GAS or Cloud.LIQUID NITROGEN
-      cloud_type = init_type,
-  // damage this cloud will cause per collision
-      damage;
+      cloud_type = init_type;
       
   speed.scale(typ.SPEED[cloud_type]);
   speed.addV2(bonus_speed);
