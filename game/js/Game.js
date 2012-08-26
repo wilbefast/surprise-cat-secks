@@ -24,7 +24,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 /// CLASS VARIABLES/CONSTANTS
 // strings
-Game.TITLE = "Black Dog";
+Game.TITLE = "Surprise Cat Secks";
 Game.AUTHOR = "By William 'wilbefast' J.D.";
 // timing: maximum number of frames per second
 Game.MAX_FPS = 60;
