@@ -48,7 +48,7 @@ var lap_around = function(pos, half_size)
     pos.addX(canvas.width + half_size);
 
   if(pos.y() > canvas.height + half_size)
-    pos.addY(-canvas.height - half_size);
-  else if(pos.y() < -half_size)
-    pos.addY(canvas.height + half_size);
+    pos.addY(-canvas.height - half_size + Game.INFOBAR_HEIGHT);
+  else if(pos.y() < -half_size + Game.INFOBAR_HEIGHT)
+    pos.addY(canvas.height + half_size - Game.INFOBAR_HEIGHT);
 }

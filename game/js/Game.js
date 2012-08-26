@@ -63,6 +63,8 @@ Game.C_MASK = "rgba(17, 17, 39, 0.9)";
 Game.OUTLINE_WIDTHS = 10;
 Game.CROSSHAIR_LINE_WIDTH = 3;
 Game.CROSSHAIR_SIZE = 24;
+Game.INFOBAR_HEIGHT = 24;
+Game.INFOBAR_OFFSET = 24;
 
 
 /// INSTANCE ATTRIBUTES/METHODS
@@ -86,8 +88,9 @@ function Game()
       m_shoot,		// boolean: is the mouse shoot key being pressed?
       m_pos,		// V2: {x,y} position of the mouse
       m_direction,	// V2: {x,y} normalised player->mouse direction
-      m_use,	// real: value between 0 and 1, move fades if not used
-      focus;		// boolean: pause if we lose focus
+      m_use,		// real: value between 0 and 1, move fades if not used
+      focus,		// boolean: pause if we lose focus
+      time;		// time taken to kill/breed all the cats				
       
   /* SUBROUTINES 
     var f = function(p1, ... ) { } 
@@ -115,6 +118,9 @@ function Game()
     m_shoot = false;
     m_wheel_offset = 0;
     m_use = 0.0;
+    
+    // time, for score
+    time = 0.0;
     
     // pause or unpause
     focus = true;
@@ -212,7 +218,6 @@ function Game()
   obj.getInputMouse = function() { return m_direction; }
   obj.getPlayer = function() { return player; }
   obj.isFocus = function() { return focus; }
-  obj.getCursorUse = function() { return m_use; }
   
   // modification
   obj.setFocus = function(new_focus) 
@@ -229,7 +234,7 @@ function Game()
       
       // draw "loading" text
       context.fillStyle = Game.C_BACKGROUND;
-      context.font = "20pt Arial";
+      context.font = "32pt cube";
       context.textAlign = "center";
       context.textBaseline = "middle";
       context.fillText("Paused", canvas.width/2, canvas.height/2);
@@ -283,12 +288,13 @@ function Game()
     {
       var offset = (i+0.5)*typ.OUTLINE_WIDTHS;
       context.strokeStyle = typ.C_OUTLINE[i];
-      context.strokeRect(offset, offset, canvas.width-offset*2, canvas.height-offset*2);
+      context.strokeRect(offset, offset + typ.INFOBAR_HEIGHT, 
+	canvas.width-offset*2, canvas.height-offset*2 - typ.INFOBAR_HEIGHT);
     }
   
+    // draw crosshair
     if(m_use > 0)
     {
-      // draw crosshair
       context.beginPath();
       context.strokeStyle = Cloud.COLOUR[player.getWeapon()] + m_use + ")";
       context.moveTo(m_pos.x(), m_pos.y()-typ.CROSSHAIR_SIZE);	// top
@@ -298,6 +304,20 @@ function Game()
       context.closePath();
       context.stroke();
     }
+    
+    // draw info-bar
+    context.fillStyle = Game.C_TEXT;
+    context.fillRect(0, 0, canvas.width, typ.INFOBAR_HEIGHT);
+    // draw information inside it
+    context.fillStyle = "rgb(221,221,221)";
+    context.font = "22pt cube";
+    context.textBaseline = "top";
+    // remaining cats
+      context.textAlign = "left";
+      context.fillText("Cats: " + Kitten.number, typ.INFOBAR_OFFSET, 0);
+    // time take
+      context.textAlign = "right";
+      context.fillText("Time: " + time, canvas.width-typ.INFOBAR_OFFSET, 0);
   }
   
   obj.injectMouseDown = function(x, y) 

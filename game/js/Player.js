@@ -42,6 +42,7 @@ Player.IMG_FACE = load_image("skull_face.png");
 Player.BODY_COLOUR = "rgb(34, 34, 77)"; 
 Player.OUTLINE_COLOUR = "rgb(11, 11, 11)"; 
 Player.OUTLINE_WIDTH = 1;
+Player.UNDERLAY_WIDTH = 8;
 Player.GUN_COLOUR = "rgb(22, 22, 22)";
 Player.GUN_WIDTH = 4;
 Player.GUN_STRIP_WIDTH = Player.GUN_WIDTH/2;
@@ -117,15 +118,11 @@ function Player(x, y)
   obj.draw = function()
   {
     // draw underlay to show which weapon is selected
-    var keyboard_use = (1.0 - Game.INSTANCE.getCursorUse());
-    if(keyboard_use != 0.0)
-    {
-      context.strokeStyle = context.strokeStyle = Cloud.COLOUR[weapon_type] 
-			      + keyboard_use + ")";
-      context.lineWidth = 8;
-      context.strokeRect(pos.x()-typ.SIZE, pos.y()-typ.SIZE, 
-		    typ.SIZE*2, typ.SIZE*2); 
-    }
+    context.strokeStyle = context.strokeStyle = Cloud.COLOUR[weapon_type] 
+			    + "1)";
+    context.lineWidth = typ.UNDERLAY_WIDTH;
+    context.strokeRect(pos.x()-typ.HALF_SIZE, pos.y()-typ.HALF_SIZE, 
+		  typ.SIZE, typ.SIZE); 
     
     // draw gun
     context.beginPath();
