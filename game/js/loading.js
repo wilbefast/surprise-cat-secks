@@ -30,7 +30,6 @@ var left_to_load = 0;
 // utility functions
 var resourceLoaded = function()
 {
-  console.log("LOADED");
   // one less to wait for
   if(left_to_load > 0)
     left_to_load--;

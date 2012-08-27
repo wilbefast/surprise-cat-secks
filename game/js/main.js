@@ -152,6 +152,7 @@ window.onkeyup = function(event)
 
 document.onmousedown = function(e) 
 { 
+  console.log("BINK");
   // since we consumed the canvas mouse events, this only occurs if we click
   // outside of the canvas ;)
   Game.INSTANCE.setFocus(false);

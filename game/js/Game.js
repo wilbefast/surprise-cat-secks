@@ -26,6 +26,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 // strings
 Game.TITLE = "Surprise Cat Secks";
 Game.AUTHOR = "By William 'wilbefast' J.D.";
+Game.TUT_TEXT = ["You are to breed a new strain of super-kittie.",
+		  "Use your weapons sparingly (SPACE/ENTER).",
+		  "Good luck and have fun!" ];
 // timing: maximum number of frames per second
 Game.MAX_FPS = 60;
 // left keys
@@ -67,6 +70,11 @@ Game.CROSSHAIR_LINE_WIDTH = 3;
 Game.CROSSHAIR_SIZE = 24;
 Game.INFOBAR_HEIGHT = 24;
 Game.INFOBAR_OFFSET = 24;
+// different modes
+Game.TUTORIAL = 0;
+Game.PLAY = 1;
+Game.SCORE = 2;
+Game.N_MODES = 3;
 
 
 /// INSTANCE ATTRIBUTES/METHODS
@@ -93,7 +101,8 @@ function Game()
       m_use,		// real: value between 0 and 1, move fades if not used
       focus,		// boolean: pause if we lose focus
       time,		// time taken to kill/breed all the cats	
-      kills;		// total number of cats killed
+      kills,		// total number of cats killed
+      mode;		// enum: tutorial, play or score screen
       
   /* SUBROUTINES 
     var f = function(p1, ... ) { } 
@@ -128,6 +137,9 @@ function Game()
     
     // pause or unpause
     focus = true;
+    
+    // mode
+    mode = typ.TUTORIAL;
   }
   
   // update dynamic objects (a variable number stored in an array)
@@ -292,9 +304,10 @@ function Game()
       context.fillRect(0,0,canvas.width, canvas.height);
       
       // draw the score on top of the mask
-      draw_info();
+      if(mode == typ.PLAY)
+	draw_info();
       
-      // draw "loading" text
+      // draw paused text
       context.fillStyle = Game.C_BACKGROUND;
       context.font = "32pt cube";
       context.textAlign = "center";
@@ -318,21 +331,32 @@ function Game()
     if(!focus)
       return;
     
-    // increment the timer
-    time += t_multiplier/typ.MAX_FPS;
-    
-    // gradually hide the cursor
-    if(!m_shoot)
+    // gameplay update
+    if(mode == typ.PLAY)
     {
-      if(m_use > typ.M_FADE_SPEED)
-	m_use -= typ.M_FADE_SPEED;
-      else
-	m_use = 0.0;
+      // increment the timer
+      time += t_multiplier/typ.MAX_FPS;
+      
+      // gradually hide the cursor
+      if(!m_shoot)
+      {
+	if(m_use > typ.M_FADE_SPEED)
+	  m_use -= typ.M_FADE_SPEED;
+	else
+	  m_use = 0.0;
+      }
+      
+      // update game objects
+      updateObjects(things, t_multiplier);	// deprecated!!!
+      updateObjects(Stain.objects, t_multiplier);
+      
+      // check if there are no cats left
+      if(Kitten.number == 0)
+      {
+	mode++;
+	Player.SND_SPRAY.pause();
+      }
     }
-    
-    // update game objects
-    updateObjects(things, t_multiplier);	// deprecated!!!
-    updateObjects(Stain.objects, t_multiplier);
   }
  
   obj.injectDraw = function()
@@ -344,20 +368,62 @@ function Game()
     context.fillStyle = Game.C_BACKGROUND;
     context.fillRect(0,0,canvas.width, canvas.height);
     
-    // draw objects
-    drawObjects(Stain.objects);
-    drawObjects(things);	// deprecated!!!
-
-      
-    // draw outline overlay
-    draw_outline();
-  
-    // draw crosshair
-    if(m_use > 0)
-      draw_crosshair();
     
-    // draw info-bar
-    draw_info();
+    switch(mode)
+    {
+      // gameplay draw loop
+      case typ.PLAY:
+	// draw objects
+	drawObjects(Stain.objects);
+	drawObjects(things);	// deprecated!!!
+	// draw outline overlay
+	draw_outline();
+	// draw crosshair
+	if(m_use > 0)
+	  draw_crosshair();
+	
+	// draw info-bar
+	draw_info();
+      break;
+      
+      case typ.TUTORIAL:
+	// draw outline overlay
+	draw_outline();
+	// draw title
+	context.fillStyle = "rgb(221,221,221)";
+	context.font = "22pt cube";
+	context.textBaseline = "top";
+	context.textAlign = "center";
+	context.fillText(typ.TITLE, canvas.width/2, 8);
+	// draw author
+	context.font = "11pt cube";
+	context.textBaseline = "top";
+	context.textAlign = "center";
+	context.fillText(typ.AUTHOR, canvas.width/2, 42);
+	// draw tutorial
+	context.fillStyle = typ.C_TEXT;
+	context.font = "16pt cube";
+	context.textAlign = "center";
+	context.textBaseline = "middle";
+	for(var i = 0; i < 3; i++)
+	  context.fillText(typ.TUT_TEXT[i], 
+			  canvas.width/2, canvas.height*(i+1)/4);
+	break;
+	
+      case typ.SCORE:
+	// draw outline overlay
+	draw_outline();
+	// draw score
+	draw_info();
+	// draw epilogue text
+	context.fillStyle = Game.C_TEXT;
+	context.font = "18pt cube";
+	context.textAlign = "center";
+	context.textBaseline = "middle";
+	context.fillText("You killed all the kitties. You monster!", 
+			 canvas.width/2, canvas.height/2);
+	break;
+    }
   }
   
   obj.injectMouseDown = function(x, y) 
@@ -366,12 +432,24 @@ function Game()
       focus = true;
     else
     {
-      m_shoot = true;
-      m_pos.setXY(x, y);
-      injectMouseDir(x, y);
+      switch(mode)
+      {
+	case typ.PLAY:
+	  m_shoot = true;
+	  m_pos.setXY(x, y);
+	  injectMouseDir(x, y);
+	  // make cursor appear
+	  m_use = 1.0;
+	  break;
       
-      // make cursor appear
-      m_use = 1.0;
+	case typ.TUTORIAL:
+	  mode++;
+	  break;
+	
+	case typ.SCORE:
+	  reset();
+	  break;
+      }
     }
   }
   
@@ -411,7 +489,21 @@ function Game()
   {
     if(!focus)
       return;
-    injectKeyState(key, true);
+    
+    switch(mode)
+    {
+      case typ.PLAY:
+	injectKeyState(key, true);
+	break;
+    
+      case typ.TUTORIAL:
+	mode++;
+	break;
+      
+      case typ.SCORE:
+	reset();
+	break;
+    }
   }
   
   obj.injectKeyUp = function(key)
