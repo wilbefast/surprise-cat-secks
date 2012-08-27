@@ -56,6 +56,8 @@ Kitten.IMG_FACE = load_image("cat_face.png");
 // colours, fonts, line widths, etc
 Kitten.OUTLINE_WIDTH = 1;
 Kitten.OUTLINE_COLOUR = "rgb(34, 34, 77)";
+// sounds
+Kitten.SND_DIE = load_audio("cat_death.wav");
 
 /// INSTANCE ATTRIBUTES/METHODS
 function Kitten(mum_resist, dad_resist, mum_pos)
@@ -201,18 +203,9 @@ function Kitten(mum_resist, dad_resist, mum_pos)
     context.lineWidth = typ.OUTLINE_WIDTH;
     context.strokeStyle = typ.OUTLINE_COLOUR;
     context.strokeRect(pos.x()-half_size, pos.y()-half_size, size, size);
-    
-    
-    
-    /* DEBUG */
-    /*context.fillStyle = "rgb(0, 0, 0)";
-    context.font = "20pt cube";
-    context.textAlign = "center";
-    context.textBaseline = "middle";
-    context.fillText(Math.floor(hitpoints), pos.x(), pos.y());*/
   }
   
-  obj.update = function(game, t_multiplier)
+  obj.update = function(t_multiplier)
   { 
     // slow down if cold, speed up if hot
     var speed = typ.MOVE_SPEED * t_multiplier;
@@ -285,9 +278,12 @@ function Kitten(mum_resist, dad_resist, mum_pos)
       typ.number--;
       typ.saturation = (typ.number/typ.MAX_NUMBER);
       
+      // make death sound
+      play_audio("cat_death.wav");
+      
       // create special-effects
       for(var i = 0; i < 3; i++)
-	Game.INSTANCE.addThing(new Stain(pos, 24, "rgba(255,0,0,"));
+	new Stain(pos, 24, "rgba(255,0,0,");
       
       return true;
     }

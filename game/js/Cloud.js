@@ -35,9 +35,9 @@ Cloud.MAX_SIZE = [128, 256, 96];
 Cloud.SPEED = [2.4, 2.2, 2.6];
 Cloud.FRICTION = [0.01, 0.017, 0.004];
 // damage
-Cloud.BASE_DAMAGE = [7.2, 5.8, 5.1];
+Cloud.BASE_DAMAGE = [3.6, 2.8, 3.0];
 // colour
-Cloud.COLOUR = ["rgba(255, 255, 0,", "rgba(225, 60, 225,", "rgba(200, 200, 255,"]
+Cloud.COLOUR = ["rgba(255, 200, 0,", "rgba(145, 255, 0,", "rgba(0, 255, 255,"]
 
 /// INSTANCE ATTRIBUTES/METHODS
 function Cloud(init_type, init_pos, init_dir, bonus_speed)
@@ -87,7 +87,7 @@ function Cloud(init_type, init_pos, init_dir, bonus_speed)
     context.fillRect(pos.x()-half_size, pos.y()-half_size, size, size);
   }
   
-  obj.update = function(game, t_multiplier)
+  obj.update = function(t_multiplier)
   {
     // move the cloud
     pos.addXY(speed.x()*t_multiplier, speed.y()*t_multiplier);

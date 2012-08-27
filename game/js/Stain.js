@@ -26,6 +26,7 @@ Stain.POS_VAR = 16;
 Stain.SIZE_VAR = 0.5;
 Stain.AGING_SPEED = 0.001;
 Stain.AGE_VAR = 0.2;
+Stain.objects = new Array();
 
 /// INSTANCE ATTRIBUTES/METHODS
 function Stain(base_pos, base_size, init_colour)
@@ -82,5 +83,6 @@ function Stain(base_pos, base_size, init_colour)
   obj.collision = function(other) { }
   
   /* RETURN INSTANCE */
+  typ.objects.push(obj);
   return obj;
 }

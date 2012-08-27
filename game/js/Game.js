@@ -131,28 +131,28 @@ function Game()
   }
   
   // update dynamic objects (a variable number stored in an array)
-  var updateThings = function(t_multiplier)
+  var updateObjects = function(obj_array, t_multiplier)
   {
     // array of indexes of objects to be deleted
     var cleanUp = new Array();
-    for(i = 0; i < things.length; i++)
+    for(i = 0; i < obj_array.length; i++)
     {
-      var a = things[i];
+      var a = obj_array[i];
       // update objects, save update result
-      var deleteThing = (a == null || a.update(obj, t_multiplier));
+      var deleteThing = (a == null || a.update(t_multiplier));
       // delete object if the update returns true
       if(deleteThing)
       {
-	things[i] = null;
+	obj_array[i] = null;
 	// add to cleanup list ;)
 	cleanUp.push(i);
       }
       else
       {
 	// generate events for these objects
-	for(var j = i+1; j < things.length; j++)
+	for(var j = i+1; j < obj_array.length; j++)
 	{
-	  var b = things[j];
+	  var b = obj_array[j];
 	  if(b != null && areColliding(a, b))
 	  {
 	    a.collision(b);
@@ -163,7 +163,14 @@ function Game()
     }
     // delete the indices in the cleanup list
     for(var i = 0; i < cleanUp.length; i++)
-      things.splice(cleanUp[i], 1);
+      obj_array.splice(cleanUp[i], 1);
+  }
+  
+  var drawObjects = function(obj_array)
+  {
+    for(var i = 0; i < obj_array.length; i++)
+      if(obj_array[i] != null)	// uber-rare but did happen... once o_O
+	obj_array[i].draw();
   }
   
   var injectKeyState = function(key, state)
@@ -324,7 +331,8 @@ function Game()
     }
     
     // update game objects
-    updateThings(t_multiplier);
+    updateObjects(things, t_multiplier);	// deprecated!!!
+    updateObjects(Stain.objects, t_multiplier);
   }
  
   obj.injectDraw = function()
@@ -337,9 +345,9 @@ function Game()
     context.fillRect(0,0,canvas.width, canvas.height);
     
     // draw objects
-    for(var i = 0; i < things.length; i++)
-      if(things[i] != null)	// uber-rare but did happen... once o_O
-	things[i].draw();
+    drawObjects(Stain.objects);
+    drawObjects(things);	// deprecated!!!
+
       
     // draw outline overlay
     draw_outline();

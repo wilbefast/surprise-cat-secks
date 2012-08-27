@@ -47,6 +47,9 @@ Player.UNDERLAY_WIDTH = 8;
 Player.GUN_COLOUR = "rgb(22, 22, 22)";
 Player.GUN_WIDTH = 4;
 Player.GUN_STRIP_WIDTH = Player.GUN_WIDTH/2;
+// sounds
+Player.SND_SPRAY = load_audio("spray.wav");
+Player.SND_SPRAY.loop = true;
 
 
 /// INSTANCE ATTRIBUTES/METHODS
@@ -153,11 +156,12 @@ function Player(x, y)
 
   }
   
-  obj.update = function(game, t_multiplier)
+  obj.update = function(t_multiplier)
   {
     // get useful variables
-    var move = game.getInputMove(), shoot = game.isInputShoot(),
-	use_mouse = game.isInputMouse();
+    var move = Game.INSTANCE.getInputMove(), 
+	shoot = Game.INSTANCE.isInputShoot(),
+	use_mouse = Game.INSTANCE.isInputMouse();
     
     // apply move commands
     if(move.x() || move.y())
@@ -193,7 +197,7 @@ function Player(x, y)
     
     // change facing based on mouse if applicable
     if(use_mouse)
-      facing.desired.setV2(game.getInputMouse());
+      facing.desired.setV2(Game.INSTANCE.getInputMouse());
     
     // interpolate aqual angle towards desired angle
     if(facing.actual.x() != facing.desired.x() 
@@ -230,6 +234,10 @@ function Player(x, y)
     // shoot gun if need be
     if(shoot)
     {
+      // play spray sound
+      if(typ.SND_SPRAY.paused)
+	typ.SND_SPRAY.play();
+	
       // make sure gun is loaded
       if(reloading > 0.0)
 	reloading -= t_multiplier;
@@ -241,6 +249,9 @@ function Player(x, y)
 	reloading = typ.RELOAD_TIME;
       }
     }
+    else
+      typ.SND_SPRAY.pause();
+      
     
     // count down until next weapon-change is allowed
     if(wpn_change_timer >= t_multiplier)
