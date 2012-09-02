@@ -21,7 +21,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 /*** CLASS representing a fluffy, flammable kitten ***/
 
-/// CLASS VARIABLES/CONSTANTS
+/// CLASS CONSTANTS
 // size
 Kitten.SIZE = 16;
 Kitten.HALF_SIZE = Kitten.SIZE / 2;
@@ -36,12 +36,10 @@ Kitten.REPRODUCE_THRESHOLD = Kitten.MAX_HITPOINTS * 0.75;
 Kitten.REPRODUCE_COST = Kitten.MAX_HITPOINTS * 0.5;
 Kitten.START_HITPOINTS = Kitten.REPRODUCE_COST;
 // repoduction
-Kitten.MAX_MUTATION = 0.4;
+Kitten.MAX_MUTATION = 0.2;
 Kitten.AGE_SPEED = 0.003;
 // counters
-Kitten.number = 0;
-Kitten.saturation = 0.0;
-Kitten.MAX_NUMBER = 35;
+Kitten.MAX_NUMBER = 64;
 // heat and cold
 Kitten.MAX_HEAT_ABS = 30;
 Kitten.HEAT_LOSS = Kitten.MAX_HEAT_ABS/70;
@@ -58,6 +56,23 @@ Kitten.OUTLINE_WIDTH = 1;
 Kitten.OUTLINE_COLOUR = "rgb(34, 34, 77)";
 // sounds
 Kitten.SND_DIE = load_audio("cat_death.wav");
+
+/// CLASS VARIABLES
+// counters
+Kitten.min_fitness = 0;
+Kitten.max_fitness = 0;
+Kitten.mean_fitness = 0;
+Kitten.number = 0;
+Kitten.saturation = 0.0;
+// object array
+Kitten.objects = new Array();
+
+/// CLASS FUNCTIONS
+Kitten.reset_counters = function()
+{
+  // saturation
+  typ.saturation = (typ.number/typ.MAX_NUMBER);
+}
 
 /// INSTANCE ATTRIBUTES/METHODS
 function Kitten(mum_resist, dad_resist, mum_pos)
@@ -89,7 +104,7 @@ function Kitten(mum_resist, dad_resist, mum_pos)
   
   // set position and normalise direction vector
   if(mum_pos)
-    pos.setV2(mum_pos);
+    pos.setXY(mum_pos.x(), mum_pos.y());
   else
     pos.setXY(Math.random()*canvas.width, Math.random()*canvas.height);
   dir.normalise();
@@ -118,6 +133,13 @@ function Kitten(mum_resist, dad_resist, mum_pos)
       b = Math.floor(255*(1.0-resist[2]));
   colour =  "rgb(" + r + "," + g + "," + b + ")";
   
+  // reset the global counters
+  var total_fitness = (resist[0] + resist[1] + resist[2])/3;
+  if(total_fitness < typ.min_fitness)
+    typ.min_fitness = total_fitness;
+  if(total_fitness > typ.max_fitness)
+    typ.max_fitness = total_fitness;
+  
   /* SUBROUTINES 
   var f = function(p1, ... ) { } 
   */
@@ -128,6 +150,10 @@ function Kitten(mum_resist, dad_resist, mum_pos)
     var cloud_type = cloud.getCloudType(),
 	damage = (1.0-resist[cloud_type]) * cloud.getDamage(),
 	previous_heat = heat;
+	
+    // turn away from clouds
+    dir.setFromTo(cloud.getPosition(), pos);
+    dir.normalise();
 	
     // we need to go deeper!
     switch(cloud_type)
@@ -157,13 +183,23 @@ function Kitten(mum_resist, dad_resist, mum_pos)
   
   var collision_kitten = function(mate)
   {
+    // turn away from adult cats only
+    if(age < 1 || mate.getAge() >= 1)
+    {
+      dir.setFromTo(mate.getPosition(), pos);
+      dir.normalise();
+      push(dir.x(), dir.y());
+    }
+    
+    // breed only if energy is full(ish), between adults
     if(typ.number < typ.MAX_NUMBER 
     && hitpoints >= typ.REPRODUCE_THRESHOLD 
-    && mate.getHitpoints() >= typ.REPRODUCE_THRESHOLD)
+    && mate.getHitpoints() >= typ.REPRODUCE_THRESHOLD
+    && age >= 1 && mate.getAge() >= 1)
     {
       hitpoints -= typ.REPRODUCE_COST;
       mate.addHitpoints(-typ.REPRODUCE_COST);
-      Game.INSTANCE.addThing(new Kitten(resist, mate.getResistance()), pos);
+      Game.INSTANCE.addThing(new Kitten(resist, mate.getResistance(), pos));
     }
   }
   
@@ -178,10 +214,11 @@ function Kitten(mum_resist, dad_resist, mum_pos)
   
   // getters
   obj.getPosition = function() { return pos; }
-  obj.getRadius = function() { return typ.HALF_SIZE; }
+  obj.getRadius = function() { return typ.HALF_SIZE*age; }
   obj.getType = function() { return typ; }
   obj.getHitpoints = function() { return hitpoints; }
   obj.getResistance = function() { return resist; }
+  obj.getAge = function() { return age; }
   
   // setters
   obj.addHitpoints = function(amount) { hitpoints += amount; }
@@ -208,7 +245,7 @@ function Kitten(mum_resist, dad_resist, mum_pos)
   obj.update = function(t_multiplier)
   { 
     // slow down if cold, speed up if hot
-    var speed = typ.MOVE_SPEED * t_multiplier;
+    var speed = typ.MOVE_SPEED * age * t_multiplier;
     if(heat != 0)
       speed *= (1.0 + heat/typ.MAX_HEAT_ABS);
     
@@ -276,7 +313,7 @@ function Kitten(mum_resist, dad_resist, mum_pos)
       // reset counters and saturation cache
       Game.INSTANCE.addKill();
       typ.number--;
-      typ.saturation = (typ.number/typ.MAX_NUMBER);
+      typ.reset_counters();
       
       // make death sound
       play_audio("cat_death.wav");
@@ -293,20 +330,18 @@ function Kitten(mum_resist, dad_resist, mum_pos)
   
   obj.collision = function(other)
   { 
-    // turn away from collisions
-    dir.setFromTo(other.getPosition(), pos);
-    dir.normalise();
-    
     switch(other.getType())
     {
       case Cloud:
 	collision_cloud(other);
 	break;
       case Player:
+	// turn away from the player
+	dir.setFromTo(other.getPosition(), pos);
+	dir.normalise();
 	push(dir.x(), dir.y());
 	break;
       case Kitten:
-	push(dir.x(), dir.y());
 	collision_kitten(other);
 	break;
     }
@@ -315,12 +350,11 @@ function Kitten(mum_resist, dad_resist, mum_pos)
   
   
   /* UPDATE COUNTERS */
-  
+  typ.objects.push(obj);
   typ.number++;
-  typ.saturation = (typ.number/typ.MAX_NUMBER);
+  typ.reset_counters();
    
   
   /* RETURN INSTANCE */
-  
   return obj;
 }

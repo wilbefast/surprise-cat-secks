@@ -91,7 +91,10 @@ function V2(init_x, init_y)
   }
   obj.setFromTo = function(v, w)
   {
-    obj.setXY(w.x()-v.x(), w.y()-v.y());
+    if(v.x() == w.x() && v.y() == w.y())
+      obj.setXY(Math.random(), Math.random());
+    else
+      obj.setXY(w.x()-v.x(), w.y()-v.y());
   }
   
   obj.setNorm = function(new_norm)

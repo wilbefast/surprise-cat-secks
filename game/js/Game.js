@@ -68,8 +68,8 @@ Game.C_MASK = "rgba(17, 17, 39, 0.9)";
 Game.OUTLINE_WIDTHS = 10;
 Game.CROSSHAIR_LINE_WIDTH = 3;
 Game.CROSSHAIR_SIZE = 24;
-Game.INFOBAR_HEIGHT = 24;
-Game.INFOBAR_OFFSET = 24;
+//--- Game.INFOBAR_HEIGHT = 24;
+//--- Game.INFOBAR_OFFSET = 24;
 // different modes
 Game.TUTORIAL = 0;
 Game.PLAY = 1;
@@ -143,7 +143,7 @@ function Game()
   }
   
   // update dynamic objects (a variable number stored in an array)
-  var updateObjects = function(obj_array, t_multiplier)
+  var updateObjects = function(obj_array, delta_t)
   {
     // array of indexes of objects to be deleted
     var cleanUp = new Array();
@@ -151,7 +151,7 @@ function Game()
     {
       var a = obj_array[i];
       // update objects, save update result
-      var deleteThing = (a == null || a.update(t_multiplier));
+      var deleteThing = (a == null || a.update(delta_t));
       // delete object if the update returns true
       if(deleteThing)
       {
@@ -240,8 +240,8 @@ function Game()
     {
       var offset = (i+0.5)*typ.OUTLINE_WIDTHS;
       context.strokeStyle = typ.C_OUTLINE[i];
-      context.strokeRect(offset, offset + typ.INFOBAR_HEIGHT, 
-	canvas.width-offset*2, canvas.height-offset*2 - typ.INFOBAR_HEIGHT);
+      context.strokeRect(offset, offset /*+ typ.INFOBAR_HEIGHT*/, 
+	canvas.width-offset*2, canvas.height-offset*2 /*- typ.INFOBAR_HEIGHT*/);
     }
   }
   
@@ -258,22 +258,28 @@ function Game()
     context.stroke();
   }
   
-  var draw_info = function()
+  /*var draw_info = function()
   {
+    // set up drawing
     context.fillStyle = "rgb(221,221,221)";
-    context.font = "22pt cube";
+    context.font = "18pt cube";
     context.textBaseline = "top";
-    // remaining cats
-      context.textAlign = "left";
-      context.fillText("Cats: " + Kitten.number, typ.INFOBAR_OFFSET, 0);
-    // numer of kills
-      context.textAlign = "center";
-      context.fillText("Kills: " + kills, canvas.width/2, 0);
-    // time taken so far
-      context.textAlign = "right";
-      context.fillText("Time: " + Math.floor(time), 
-		       canvas.width-typ.INFOBAR_OFFSET, 0);
-  }
+    context.textAlign = "center";
+    
+    // build info-bar string
+    var info_text = "";
+      // remaining cats
+      info_text += "Cats: " + Kitten.number + "/" + Kitten.MAX_NUMBER;
+      // number of kills
+      info_text += "  Kills: " + kills;
+      // resistance
+      info_text += "  Fitness: " + 32 + '%';
+      // time taken so far
+      info_text += "  Time: " + Math.floor(time);
+	
+    // draw the string
+    context.fillText(info_text, canvas.width/2, 0);
+  }*/
   
   /* METHODS 
     (obj.f = function(p1, ... ) { }
@@ -326,16 +332,16 @@ function Game()
   obj.addKill = function() { kills++; }
   
   // injections
-  obj.injectUpdate = function(t_multiplier)
+  obj.injectUpdate = function(delta_t)
   {
     if(!focus)
       return;
-    
+
     // gameplay update
     if(mode == typ.PLAY)
     {
       // increment the timer
-      time += t_multiplier/typ.MAX_FPS;
+      time += delta_t/typ.MAX_FPS;
       
       // gradually hide the cursor
       if(!m_shoot)
@@ -347,8 +353,8 @@ function Game()
       }
       
       // update game objects
-      updateObjects(things, t_multiplier);	// deprecated!!!
-      updateObjects(Stain.objects, t_multiplier);
+      updateObjects(things, delta_t);	// deprecated!!!
+      updateObjects(Stain.objects, delta_t);
       
       // check if there are no cats left
       if(Kitten.number == 0)
@@ -357,6 +363,18 @@ function Game()
 	Player.SND_SPRAY.pause();
       }
     }
+    
+    // update the GUI
+    tdata_cats.innerHTML = Kitten.number + "/" + Kitten.MAX_NUMBER;
+    tdata_kills.innerHTML = kills;
+    var minutes = Math.floor(time/60);
+      if(minutes < 10) minutes = '0' + minutes;
+    var seconds = Math.floor(time)%60;
+      if(seconds < 10) seconds = '0' + seconds;
+    tdata_time.innerHTML = minutes + ':' +  seconds;
+    tdata_min.innerHTML = Math.floor(Kitten.min_fitness*100) + '%';
+    tdata_mean.innerHTML = Math.floor(Kitten.mean_fitness*100) + '%';
+    tdata_max.innerHTML = Math.floor(Kitten.max_fitness*100) + '%';
   }
  
   obj.injectDraw = function()
@@ -383,14 +401,14 @@ function Game()
 	  draw_crosshair();
 	
 	// draw info-bar
-	draw_info();
+	//--- draw_info();
       break;
       
       case typ.TUTORIAL:
 	// draw outline overlay
 	draw_outline();
 	// draw title
-	context.fillStyle = "rgb(221,221,221)";
+	/*context.fillStyle = "rgb(221,221,221)";
 	context.font = "22pt cube";
 	context.textBaseline = "top";
 	context.textAlign = "center";
@@ -399,7 +417,7 @@ function Game()
 	context.font = "11pt cube";
 	context.textBaseline = "top";
 	context.textAlign = "center";
-	context.fillText(typ.AUTHOR, canvas.width/2, 42);
+	context.fillText(typ.AUTHOR, canvas.width/2, 42);*/
 	// draw tutorial
 	context.fillStyle = typ.C_TEXT;
 	context.font = "16pt cube";
@@ -414,7 +432,7 @@ function Game()
 	// draw outline overlay
 	draw_outline();
 	// draw score
-	draw_info();
+	//--- draw_info();
 	// draw epilogue text
 	context.fillStyle = Game.C_TEXT;
 	context.font = "18pt cube";

@@ -32,7 +32,7 @@ Player.SPEED_DELTA = Player.SPEED_MAX / 8.0;
 Player.SPEED_MAX_2 = Math.pow(Player.SPEED_MAX, 2);
 Player.SPEED_MAX_INV = 1.0 / Player.SPEED_MAX;
 Player.FRICTION = 0.1;
-Player.TURN_SPEED = 0.05;
+Player.TURN_SPEED = 0.08;
 Player.FACING_CHANGE_TIME = 3;
 // weapons
 Player.RELOAD_TIME = 17;
@@ -193,7 +193,7 @@ function Player(x, y)
     }
     else
       // reset direction-change timer
-      facing.change_timer = typ.FACING_CHANGE_TIME;
+      facing.change_timer = typ.FACING_CHANGE_TIME*t_multiplier;
     
     // change facing based on mouse if applicable
     if(use_mouse)
@@ -208,7 +208,7 @@ function Player(x, y)
       else
       {
 	var turn_dir = (facing.actual.det(facing.desired) > 0.0) ? 1 : -1
-	facing.actual.addAngle(typ.TURN_SPEED*turn_dir);
+	facing.actual.addAngle(typ.TURN_SPEED*turn_dir*t_multiplier);
       }
     }
     

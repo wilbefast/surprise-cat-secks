@@ -19,47 +19,21 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-
-var next_tick = 0, missed_ticks = 0, this_tick = 0;
-
-function init_timing()
-{
-  // The future is now!
-  next_tick = (new Date()).getTime();
-}
-
-function wait(f)
-{
-  // Get the current time-stamp
-  this_tick = (new Date()).getTime();
-
-  // If it's not yet time for the next update, wait a while
-  if (this_tick < next_tick)
-  {
-    setTimeout(f, next_tick - this_tick);
-    missed_ticks = 0;
-  }
-  else
-  {
-    setTimeout(f, 0);
-    missed_ticks = this_tick - next_tick;
-  }
-
-  // Calculate when the next update should be
-  var fps = Game.INSTANCE.isFocus() ? Game.MAX_FPS : (Game.MAX_FPS/10);
-  next_tick = this_tick + (1000 / fps);
-}
-
+var prev_tick = this_tick = (new Date()).getTime();
 function update_loop()
 {
+  // deal with timing
+  prev_tick = this_tick;
+  this_tick = (new Date()).getTime();
+  
   // update the Game
-  Game.INSTANCE.injectUpdate(1.0 + missed_ticks/1000.0*Game.MAX_FPS);
+  Game.INSTANCE.injectUpdate((this_tick - prev_tick) / 1000 * Game.MAX_FPS);
   
   // redraw the Game
   Game.INSTANCE.injectDraw();
   
   // repeat this function after a short delay
-  wait(update_loop);
+  setTimeout(update_loop, 1000 / Game.MAX_FPS);
 }
 
 function loading_screen()
@@ -84,10 +58,7 @@ function loading_screen()
     setTimeout("loading_screen()", 500);
   }
   else
-  {
-    init_timing();
     update_loop();
-  }
     
 }
 
@@ -152,7 +123,6 @@ window.onkeyup = function(event)
 
 document.onmousedown = function(e) 
 { 
-  console.log("BINK");
   // since we consumed the canvas mouse events, this only occurs if we click
   // outside of the canvas ;)
   Game.INSTANCE.setFocus(false);
