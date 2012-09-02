@@ -62,16 +62,56 @@ Kitten.SND_DIE = load_audio("cat_death.wav");
 Kitten.min_fitness = 0;
 Kitten.max_fitness = 0;
 Kitten.mean_fitness = 0;
-Kitten.number = 0;
 Kitten.saturation = 0.0;
+// fittest and least fit cat
+Kitten.worst = Kitten.best = null;
 // object array
 Kitten.objects;
 
 /// CLASS FUNCTIONS
+
 Kitten.reset_counters = function()
 {
-  // saturation
-  this.saturation = (this.number/this.MAX_NUMBER);
+  // recalculate saturation
+  this.saturation = (this.objects.length/this.MAX_NUMBER);
+  
+  // avoid divisions by 0
+  if(this.objects.length == 0)
+    return;
+  
+  // reset all
+  this.mean_fitness = this.max_fitness = 0.0;
+  this.min_fitness = 1.0;
+  var live_cats = 0;
+  
+  // recalculate min, max, mean
+  for(var i = 0; i < this.objects.length; i++)
+  {
+    var obj = this.objects[i];
+    
+    // don't count dead cats
+    if(obj == null || obj.getHitpoints() <= 0)
+      continue;
+    
+    var fitness = obj.getFitness();
+    
+    // min and max
+    if(fitness < this.min_fitness)
+    {
+      this.min_fitness = obj.getFitness();
+      this.worst = obj;
+    }
+    if(fitness > this.max_fitness)
+    {
+      this.max_fitness = obj.getFitness();
+      this.best = obj;
+    }
+    
+    // mean
+    this.mean_fitness += fitness;
+    live_cats++;
+  }
+  this.mean_fitness /= live_cats;
 }
 
 /// INSTANCE ATTRIBUTES/METHODS
@@ -133,12 +173,8 @@ function Kitten(mum_resist, dad_resist, mum_pos)
       b = Math.floor(255*(1.0-resist[2]));
   colour =  "rgb(" + r + "," + g + "," + b + ")";
   
-  // reset the global counters
+  // cache total fitness as this will not change
   var total_fitness = (resist[0] + resist[1] + resist[2])/3;
-  if(total_fitness < typ.min_fitness)
-    typ.min_fitness = total_fitness;
-  if(total_fitness > typ.max_fitness)
-    typ.max_fitness = total_fitness;
   
   /* SUBROUTINES 
   var f = function(p1, ... ) { } 
@@ -192,7 +228,7 @@ function Kitten(mum_resist, dad_resist, mum_pos)
     }
     
     // breed only if energy is full(ish), between adults
-    if(typ.number < typ.MAX_NUMBER 
+    if(typ.objects.length < typ.MAX_NUMBER 
     && hitpoints >= typ.REPRODUCE_THRESHOLD 
     && mate.getHitpoints() >= typ.REPRODUCE_THRESHOLD
     && age >= 1 && mate.getAge() >= 1)
@@ -219,6 +255,8 @@ function Kitten(mum_resist, dad_resist, mum_pos)
   obj.getHitpoints = function() { return hitpoints; }
   obj.getResistance = function() { return resist; }
   obj.getAge = function() { return age; }
+  obj.getFitness = function() { return total_fitness; }
+  obj.getColour = function() { return colour; }
   
   // setters
   obj.addHitpoints = function(amount) { hitpoints += amount; }
@@ -240,6 +278,15 @@ function Kitten(mum_resist, dad_resist, mum_pos)
     context.lineWidth = typ.OUTLINE_WIDTH;
     context.strokeStyle = typ.OUTLINE_COLOUR;
     context.strokeRect(pos.x()-half_size, pos.y()-half_size, size, size);
+    
+    // draw fire or ice
+    if(heat != 0)
+    {
+      context.fillStyle = ((heat > 0) ? Cloud.COLOUR[0] : Cloud.COLOUR[2]) 
+			    + (Math.abs(heat)/typ.MAX_HEAT_ABS) + ")"; 
+      context.fillRect(pos.x()-size, pos.y()-size, size*2, size*2);
+    }
+    
   }
   
   obj.update = function(t_multiplier)
@@ -259,7 +306,7 @@ function Kitten(mum_resist, dad_resist, mum_pos)
     }
     // regenerate health
     else if(!heat && !poison && hitpoints < typ.MAX_HITPOINTS 
-    && typ.number < typ.MAX_NUMBER)
+    && typ.objects.length < typ.MAX_NUMBER)
     {
       // faster regenerate the fewer kittens there are
       var hitpoints_regen 
@@ -312,7 +359,6 @@ function Kitten(mum_resist, dad_resist, mum_pos)
     {
       // reset counters and saturation cache
       Game.INSTANCE.addKill();
-      typ.number--;
       typ.reset_counters();
       
       // make death sound

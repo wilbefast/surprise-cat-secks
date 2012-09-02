@@ -68,8 +68,6 @@ Game.C_MASK = "rgba(17, 17, 39, 0.9)";
 Game.OUTLINE_WIDTHS = 10;
 Game.CROSSHAIR_LINE_WIDTH = 3;
 Game.CROSSHAIR_SIZE = 24;
-//--- Game.INFOBAR_HEIGHT = 24;
-//--- Game.INFOBAR_OFFSET = 24;
 // different modes
 Game.TUTORIAL = 0;
 Game.PLAY = 1;
@@ -277,29 +275,6 @@ function Game()
     context.stroke();
   }
   
-  /*var draw_info = function()
-  {
-    // set up drawing
-    context.fillStyle = "rgb(221,221,221)";
-    context.font = "18pt cube";
-    context.textBaseline = "top";
-    context.textAlign = "center";
-    
-    // build info-bar string
-    var info_text = "";
-      // remaining cats
-      info_text += "Cats: " + Kitten.number + "/" + Kitten.MAX_NUMBER;
-      // number of kills
-      info_text += "  Kills: " + kills;
-      // resistance
-      info_text += "  Fitness: " + 32 + '%';
-      // time taken so far
-      info_text += "  Time: " + Math.floor(time);
-	
-    // draw the string
-    context.fillText(info_text, canvas.width/2, 0);
-  }*/
-  
   /* METHODS 
     (obj.f = function(p1, ... ) { }
   */
@@ -327,10 +302,6 @@ function Game()
       // apply mask
       context.fillStyle = Game.C_MASK;
       context.fillRect(0,0,canvas.width, canvas.height);
-      
-      // draw the score on top of the mask
-      if(mode == typ.PLAY)
-	draw_info();
       
       // draw paused text
       context.fillStyle = Game.C_BACKGROUND;
@@ -377,7 +348,7 @@ function Game()
       updateObjects(Stain.objects, delta_t);
       
       // check if there are no cats left
-      if(Kitten.number == 0)
+      if(Kitten.objects.length == 0)
       {
 	mode++;
 	Player.SND_SPRAY.pause();
@@ -385,7 +356,7 @@ function Game()
     }
     
     // update the GUI
-    tdata_cats.innerHTML = Kitten.number + "/" + Kitten.MAX_NUMBER;
+    tdata_cats.innerHTML = Kitten.objects.length + "/" + Kitten.MAX_NUMBER;
     tdata_kills.innerHTML = kills;
     var minutes = Math.floor(time/60);
       if(minutes < 10) minutes = '0' + minutes;
@@ -421,25 +392,30 @@ function Game()
 	// draw crosshair
 	if(m_use > 0)
 	  draw_crosshair();
-	
-	// draw info-bar
-	//--- draw_info();
+	// draw marker on best and worst cats
+	context.font = "16pt cube";
+	context.lineWidth = 1;
+	if(Kitten.worst != null)
+	{
+	  var pos = Kitten.worst.getPosition();
+	  context.fillStyle = context.strokeStyle = Kitten.worst.getColour();
+	  context.fillText("WORST", pos.x(), pos.y()-24);
+	  context.strokeRect(pos.x()-Kitten.SIZE, pos.y()-Kitten.SIZE, 
+			    Kitten.SIZE*2, Kitten.SIZE*2);
+	}
+	if(Kitten.best != null)
+	{
+	  var pos = Kitten.best.getPosition();
+	  context.fillStyle = context.strokeStyle = Kitten.best.getColour();
+	  context.fillText("BEST", pos.x(), pos.y()-24);
+	  context.strokeRect(pos.x()-Kitten.SIZE, pos.y()-Kitten.SIZE, 
+			    Kitten.SIZE*2, Kitten.SIZE*2);
+	}	
       break;
       
       case typ.TUTORIAL:
 	// draw outline overlay
 	draw_outline();
-	// draw title
-	/*context.fillStyle = "rgb(221,221,221)";
-	context.font = "22pt cube";
-	context.textBaseline = "top";
-	context.textAlign = "center";
-	context.fillText(typ.TITLE, canvas.width/2, 8);
-	// draw author
-	context.font = "11pt cube";
-	context.textBaseline = "top";
-	context.textAlign = "center";
-	context.fillText(typ.AUTHOR, canvas.width/2, 42);*/
 	// draw tutorial
 	context.fillStyle = typ.C_TEXT;
 	context.font = "16pt cube";
@@ -453,8 +429,6 @@ function Game()
       case typ.SCORE:
 	// draw outline overlay
 	draw_outline();
-	// draw score
-	//--- draw_info();
 	// draw epilogue text
 	context.fillStyle = Game.C_TEXT;
 	context.font = "18pt cube";
