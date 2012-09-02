@@ -34,7 +34,7 @@ Kitten.MAX_HITPOINTS = 100;
 Kitten.HITPOINTS_REGEN = 0.9;
 Kitten.REPRODUCE_THRESHOLD = Kitten.MAX_HITPOINTS * 0.75;
 Kitten.REPRODUCE_COST = Kitten.MAX_HITPOINTS * 0.5;
-Kitten.START_HITPOINTS = Kitten.REPRODUCE_COST;
+Kitten.START_HITPOINTS = Kitten.REPRODUCE_COST * 0.5;
 // repoduction
 Kitten.MAX_MUTATION = 0.2;
 Kitten.AGE_SPEED = 0.003;
@@ -71,7 +71,7 @@ Kitten.objects = new Array();
 Kitten.reset_counters = function()
 {
   // saturation
-  typ.saturation = (typ.number/typ.MAX_NUMBER);
+  this.saturation = (this.number/this.MAX_NUMBER);
 }
 
 /// INSTANCE ATTRIBUTES/METHODS
