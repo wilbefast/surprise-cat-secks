@@ -22,7 +22,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 /*** CLASS representing a cloud of flames, liquid-nitrogen or nerve-gas ***/
 
-/// CLASS VARIABLES/CONSTANTS
+/// CLASS CONSTANTS
 // types of cloud, used to index other constants
 Cloud.N_TYPES = 3;
 Cloud.NAPALM = 0;
@@ -38,6 +38,10 @@ Cloud.FRICTION = [0.01, 0.017, 0.004];
 Cloud.BASE_DAMAGE = [3.6, 2.8, 3.0];
 // colour
 Cloud.COLOUR = ["rgba(255, 200, 0,", "rgba(145, 255, 0,", "rgba(0, 255, 255,"]
+
+/// CLASS CONSTANTS
+// objects of this class
+Cloud.objects;
 
 /// INSTANCE ATTRIBUTES/METHODS
 function Cloud(init_type, init_pos, init_dir, bonus_speed)
@@ -122,5 +126,6 @@ function Cloud(init_type, init_pos, init_dir, bonus_speed)
   obj.collision = function(other) { }
   
   /* RETURN INSTANCE */
+  typ.objects.push(obj);
   return obj;
 }

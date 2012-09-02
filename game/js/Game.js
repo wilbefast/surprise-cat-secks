@@ -88,9 +88,7 @@ function Game()
   var obj = this, typ = Game;
   
   // true attributes
-  var things,		// Array: [a, b, c, d, ...] list of dynamic game-objects
-      player,		// Player: the player-character object
-      k_left, k_right, 	// boolean: left and right arrow keys?
+  var k_left, k_right, 	// boolean: left and right arrow keys?
       k_up, key_down,	// boolean: up and down arrow keys?
       k_direction,	// V2: {x,y} reprenting direction pressed on key-pad
       k_shoot,		// boolean: is shoot key being pressed?
@@ -111,15 +109,16 @@ function Game()
   // reset the game to its initial state
   var reset = function()
   {
-    // object management
-    things = new Array();
+    // clear all objects
+    Kitten.objects = new Array();
+    Player.objects = new Array();
+    Cloud.objects = new Array();
+    Stain.objects = new Array();
+    
+    // create new objects
+    new Player(canvas.width/2, canvas.height/2);
     for(var i = 0; i < typ.STARTING_KITTENS; i++)
-    {
-      things.push(new Kitten());
-    }
-    // player character
-    player = new Player(canvas.width/2, canvas.height/2);
-    things.push(player);
+      new Kitten();
 
     // keyboard
     k_direction = new V2();
@@ -142,12 +141,31 @@ function Game()
     mode = typ.TUTORIAL;
   }
   
+  // generate a collision between two objects if applicable
+  var generateCollision = function(a, b)
+  {
+    if(a != null && b != null && areColliding(a, b))
+    {
+      // generate collision
+      a.collision(b);
+      b.collision(a);
+    }
+  }
+  
+  // generate collisions between two arrays of dynamic objects
+  var generateObjectCollisions = function(obj_array1, obj_array2)
+  {
+    for(var i = 0; i < obj_array1.length; i++)
+    for(var j = 0; j < obj_array2.length; j++)
+      generateCollision(obj_array1[i], b = obj_array2[j])
+  }
+  
   // update dynamic objects (a variable number stored in an array)
-  var updateObjects = function(obj_array, delta_t)
+  var updateObjects = function(obj_array, delta_t, check_collisions)
   {
     // array of indexes of objects to be deleted
     var cleanUp = new Array();
-    for(i = 0; i < obj_array.length; i++)
+    for(var i = 0; i < obj_array.length; i++)
     {
       var a = obj_array[i];
       // update objects, save update result
@@ -159,7 +177,7 @@ function Game()
 	// add to cleanup list ;)
 	cleanUp.push(i);
       }
-      else
+      else if(check_collisions)
       {
 	// generate events for these objects
 	for(var j = i+1; j < obj_array.length; j++)
@@ -167,6 +185,7 @@ function Game()
 	  var b = obj_array[j];
 	  if(b != null && areColliding(a, b))
 	  {
+	    // generate collision
 	    a.collision(b);
 	    b.collision(a);
 	  }
@@ -207,7 +226,7 @@ function Game()
 	break;
       case typ.K_ENTER:
 	if(state && !k_wpn_change)
-	  player.change_weapon(1);
+	  Player.objects[0].change_weapon(1);
 	k_wpn_change = state;
 	break;
     }
@@ -223,7 +242,7 @@ function Game()
   
   var injectMouseDir = function(x, y)
   {
-    m_direction.setFromTo(player.getPosition(), m_pos);
+    m_direction.setFromTo(Player.objects[0].getPosition(), m_pos);
     m_direction.normalise();
   }
   
@@ -249,7 +268,7 @@ function Game()
   {
     // diamond shape
     context.beginPath();
-    context.strokeStyle = Cloud.COLOUR[player.getWeapon()] + m_use + ")";
+    context.strokeStyle = Cloud.COLOUR[Player.objects[0].getWeapon()] + m_use + ")";
     context.moveTo(m_pos.x(), m_pos.y()-typ.CROSSHAIR_SIZE);	// top
     context.lineTo(m_pos.x()+typ.CROSSHAIR_SIZE, m_pos.y());	// right
     context.lineTo(m_pos.x(), m_pos.y()+typ.CROSSHAIR_SIZE);	// bottom
@@ -293,7 +312,7 @@ function Game()
   obj.isInputShoot = function() { return (k_shoot||m_shoot); }
   obj.isInputMouse = function() { return m_shoot; }
   obj.getInputMouse = function() { return m_direction; }
-  obj.getPlayer = function() { return player; }
+  obj.getPlayer = function() { return Player.objects[0]; }
   obj.isFocus = function() { return focus; }
   
   // modification
@@ -324,11 +343,6 @@ function Game()
     focus = new_focus; 
   }
   
-  obj.addThing = function(new_thing)
-  {
-    things.push(new_thing);
-  }
-  
   obj.addKill = function() { kills++; }
   
   // injections
@@ -352,8 +366,14 @@ function Game()
 	  m_use = 0.0;
       }
       
-      // update game objects
-      updateObjects(things, delta_t);	// deprecated!!!
+      // generate inter-object-type collisions
+      generateObjectCollisions(Kitten.objects, Cloud.objects);
+      generateObjectCollisions(Kitten.objects, Player.objects);
+      
+      // update game objects (generating collisions between same-type objects)
+      updateObjects(Player.objects, delta_t);
+      updateObjects(Kitten.objects, delta_t, true);
+      updateObjects(Cloud.objects, delta_t);
       updateObjects(Stain.objects, delta_t);
       
       // check if there are no cats left
@@ -393,7 +413,9 @@ function Game()
       case typ.PLAY:
 	// draw objects
 	drawObjects(Stain.objects);
-	drawObjects(things);	// deprecated!!!
+	drawObjects(Kitten.objects);
+	drawObjects(Cloud.objects);
+	drawObjects(Player.objects);
 	// draw outline overlay
 	draw_outline();
 	// draw crosshair
@@ -500,7 +522,7 @@ function Game()
     if(!focus)
       return;
     
-    player.change_weapon(sign(delta));
+    Player.objects[0].change_weapon(sign(delta));
   }
   
   obj.injectKeyDown = function(key)

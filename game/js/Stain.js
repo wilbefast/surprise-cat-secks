@@ -26,7 +26,7 @@ Stain.POS_VAR = 16;
 Stain.SIZE_VAR = 0.5;
 Stain.AGING_SPEED = 0.001;
 Stain.AGE_VAR = 0.2;
-Stain.objects = new Array();
+Stain.objects;
 
 /// INSTANCE ATTRIBUTES/METHODS
 function Stain(base_pos, base_size, init_colour)

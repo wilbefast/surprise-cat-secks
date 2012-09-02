@@ -65,7 +65,7 @@ Kitten.mean_fitness = 0;
 Kitten.number = 0;
 Kitten.saturation = 0.0;
 // object array
-Kitten.objects = new Array();
+Kitten.objects;
 
 /// CLASS FUNCTIONS
 Kitten.reset_counters = function()
@@ -199,7 +199,7 @@ function Kitten(mum_resist, dad_resist, mum_pos)
     {
       hitpoints -= typ.REPRODUCE_COST;
       mate.addHitpoints(-typ.REPRODUCE_COST);
-      Game.INSTANCE.addThing(new Kitten(resist, mate.getResistance(), pos));
+      new Kitten(resist, mate.getResistance(), pos);
     }
   }
   

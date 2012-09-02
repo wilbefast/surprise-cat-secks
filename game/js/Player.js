@@ -21,7 +21,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 /*** PLAYER CHARACTER CLASS ***/
 
-/// CLASS VARIABLES/CONSTANTS
+/// CLASS CONSTANTS
 // size
 Player.SIZE = 24;
 Player.HALF_SIZE = Player.SIZE / 2;
@@ -51,6 +51,8 @@ Player.GUN_STRIP_WIDTH = Player.GUN_WIDTH/2;
 Player.SND_SPRAY = load_audio("spray.wav");
 Player.SND_SPRAY.loop = true;
 
+// CLASS VARIABLES
+Player.objects;
 
 /// INSTANCE ATTRIBUTES/METHODS
 
@@ -243,8 +245,7 @@ function Player(x, y)
 	reloading -= t_multiplier;
       else
       {
-	Game.INSTANCE.addThing(new Cloud(weapon_type, nozzle_pos, 
-					 facing.actual, speed));
+	new Cloud(weapon_type, nozzle_pos, facing.actual, speed);
 	// wait for reload
 	reloading = typ.RELOAD_TIME;
       }
@@ -263,5 +264,6 @@ function Player(x, y)
   obj.collision = function(other) { }
   
   /* RETURN THE INSTANCE */
+  typ.objects.push(obj);
   return obj;
 }
