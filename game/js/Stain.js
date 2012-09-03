@@ -24,7 +24,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 /// CLASS VARIABLES/CONSTANTS
 Stain.POS_VAR = 16;
 Stain.SIZE_VAR = 0.5;
-Stain.AGING_SPEED = 0.001;
+Stain.AGING_SPEED = 0.005;
 Stain.AGE_VAR = 0.2;
 Stain.objects;
 

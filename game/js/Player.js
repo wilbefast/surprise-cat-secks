@@ -35,8 +35,8 @@ Player.FRICTION = 0.1;
 Player.TURN_SPEED = 0.08;
 Player.FACING_CHANGE_TIME = 3;
 // weapons
-Player.RELOAD_TIME = 17;
-Player.WEAPON_CHANGE_TIME = 45;
+Player.RELOAD_TIME = 15;
+Player.WEAPON_CHANGE_TIME = 20;
 // images
 Player.IMG_FACE = load_image("skull_face.png");
 // colours, fonts, line widths, etc
@@ -172,8 +172,10 @@ function Player(x, y)
       if(!shoot && !use_mouse
       && (move.x() != facing.desired.x() || move.y() != facing.desired.y()))
       {
+	console.log("K reset facing: " + facing.change_timer);
+	
 	// don't change direction immediately or we'll never face diagonals
-	if(facing.change_timer == 0)
+	if(facing.change_timer <= 0)
 	{
 	  // change direction
 	  facing.desired.setXY(move.x(), move.y());

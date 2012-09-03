@@ -73,7 +73,9 @@ Game.TUTORIAL = 0;
 Game.PLAY = 1;
 Game.SCORE = 2;
 Game.N_MODES = 3;
-
+// music
+Game.music = load_audio("music.ogg");
+Game.music.volume = 0.2;
 
 /// INSTANCE ATTRIBUTES/METHODS
 function Game()
@@ -109,6 +111,7 @@ function Game()
   {
     // clear all objects
     Kitten.objects = new Array();
+    Kitten.best = Kitten.worst = null;
     Player.objects = new Array();
     Cloud.objects = new Array();
     Stain.objects = new Array();
@@ -292,9 +295,12 @@ function Game()
   
   // modification
   obj.setFocus = function(new_focus) 
-  { 
+  {  
     if(focus && !new_focus)
     {
+      // pause music
+      typ.music.pause();
+      
       // redraw once without the cursor
       m_use = 0;
       obj.injectDraw();
@@ -310,6 +316,8 @@ function Game()
       context.textBaseline = "middle";
       context.fillText("Paused", canvas.width/2, canvas.height/2);
     }
+    else if(!focus && new_focus)
+      typ.music.play();
 
     focus = new_focus; 
   }
@@ -443,7 +451,7 @@ function Game()
   obj.injectMouseDown = function(x, y) 
   { 
     if(!focus)
-      focus = true;
+      obj.setFocus(true);
     else
     {
       switch(mode)
@@ -528,6 +536,7 @@ function Game()
 
   /* INITIALISE AND RETURN INSTANCE */
   reset();
+  typ.music.play(); typ.music.loop = true;
   return obj;
 }
 

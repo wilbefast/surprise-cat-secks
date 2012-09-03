@@ -28,6 +28,7 @@ Kitten.HALF_SIZE = Kitten.SIZE / 2;
 Kitten.PUSH_LENGTH = 2.0;
 // movement
 Kitten.TURN_SPEED = 0.1;
+Kitten.POISON_TURN_SPEED = 0.5;
 Kitten.MOVE_SPEED = 1.0;
 // hitpoints
 Kitten.MAX_HITPOINTS = 100;
@@ -39,16 +40,17 @@ Kitten.START_HITPOINTS = Kitten.REPRODUCE_COST * 0.5;
 Kitten.MAX_MUTATION = 0.2;
 Kitten.AGE_SPEED = 0.003;
 // counters
-Kitten.MAX_NUMBER = 64;
+Kitten.MAX_NUMBER = 35;
 // heat and cold
 Kitten.MAX_HEAT_ABS = 30;
 Kitten.HEAT_LOSS = Kitten.MAX_HEAT_ABS/70;
 Kitten.HEAT_DAMAGE = Kitten.HEAT_LOSS; // 1 heat loss means 1 damage
 // poison from nerve-gas
+Kitten.POISON_PER_DAMAGE = 5;
 Kitten.MAX_POISON = 70;
-Kitten.POISON_DISSIPATION = Kitten.MAX_POISON/90;
-Kitten.POISON_DAMAGE = Kitten.POISON_DISSIPATION; 
-				      // 1 poison dissipation = 1 damage
+Kitten.POISON_DISSIPATION = Kitten.MAX_POISON/200;
+Kitten.POISON_DAMAGE = Kitten.POISON_DISSIPATION/Kitten.POISON_PER_DAMAGE; 
+				      // 5 poison dissipation = 1 damage
 // images
 Kitten.IMG_FACE = load_image("cat_face.png");
 // colours, fonts, line widths, etc
@@ -56,6 +58,7 @@ Kitten.OUTLINE_WIDTH = 1;
 Kitten.OUTLINE_COLOUR = "rgb(34, 34, 77)";
 // sounds
 Kitten.SND_DIE = load_audio("cat_death.wav");
+Kitten.SND_SECKS = load_audio("cat_secks.wav");
 
 /// CLASS VARIABLES
 // counters
@@ -74,10 +77,6 @@ Kitten.reset_counters = function()
 {
   // recalculate saturation
   this.saturation = (this.objects.length/this.MAX_NUMBER);
-  
-  // avoid divisions by 0
-  if(this.objects.length == 0)
-    return;
   
   // reset all
   this.mean_fitness = this.max_fitness = 0.0;
@@ -111,6 +110,14 @@ Kitten.reset_counters = function()
     this.mean_fitness += fitness;
     live_cats++;
   }
+  
+  // avoid divisions by 0
+  if(this.objects.length == 0 || live_cats == 0)
+  {
+    this.min_fitness = 0.0;
+    return;
+  }
+  
   this.mean_fitness /= live_cats;
 }
 
@@ -130,7 +137,7 @@ function Kitten(mum_resist, dad_resist, mum_pos)
   // V2: current direction
       dir = new V2(rand_sign(), rand_sign()),
   // real: between 0 and 1, 1 is mature and can repoduce
-      age = (mum_resist && dad_resist) ? 0.0 : rand_between(0.0, 1.0), 
+      age = (mum_resist && dad_resist) ? 0.0 : rand_between(0.5, 1.0), 
   // int: remaining hitpoints
       hitpoints = typ.START_HITPOINTS,	
   // int: body-heat, where positive means burning and negative freezing
@@ -195,26 +202,23 @@ function Kitten(mum_resist, dad_resist, mum_pos)
     switch(cloud_type)
     {
       case Cloud.NAPALM:
-	heat += damage;
+	obj.addHeat(damage);
 	if(previous_heat < 0)
-	  damage -= -previous_heat; 
+	  damage -= -previous_heat;	// thaw from ice 
 	break;
       case Cloud.NERVE_GAS:
+	poison += typ.POISON_PER_DAMAGE*damage;
 	break;
       case Cloud.LIQUID_NITROGEN:
-	heat -= damage;
+	obj.addHeat(-damage);
 	if(previous_heat > 0)
-	  damage -= previous_heat; 
+	  damage -= previous_heat; 	// extinguish fire
 	break;
     }
     
     // apply the damage
     if(damage > 0)
       hitpoints -= damage;
-    
-    // cap burn and freeze amounts
-    if(Math.abs(heat) > typ.MAX_HEAT_ABS)
-      heat = sign(heat)*typ.MAX_HEAT_ABS;
   }
   
   var collision_kitten = function(mate)
@@ -229,6 +233,8 @@ function Kitten(mum_resist, dad_resist, mum_pos)
     
     // breed only if energy is full(ish), between adults
     if(typ.objects.length < typ.MAX_NUMBER 
+    && heat == 0 && mate.getHeat() == 0
+    && poison == 0 && mate.getPoison() == 0
     && hitpoints >= typ.REPRODUCE_THRESHOLD 
     && mate.getHitpoints() >= typ.REPRODUCE_THRESHOLD
     && age >= 1 && mate.getAge() >= 1)
@@ -236,7 +242,12 @@ function Kitten(mum_resist, dad_resist, mum_pos)
       hitpoints -= typ.REPRODUCE_COST;
       mate.addHitpoints(-typ.REPRODUCE_COST);
       new Kitten(resist, mate.getResistance(), pos);
+      play_audio("cat_secks.wav");
     }
+    
+    // set fire to other cats!
+    else if(heat != 0)
+      mate.addHeat(heat/2);
   }
   
   var push = function(xx, yy)
@@ -257,15 +268,46 @@ function Kitten(mum_resist, dad_resist, mum_pos)
   obj.getAge = function() { return age; }
   obj.getFitness = function() { return total_fitness; }
   obj.getColour = function() { return colour; }
+  obj.getHeat = function() { return heat; }
+  obj.getPoison = function() { return poison; }
   
   // setters
   obj.addHitpoints = function(amount) { hitpoints += amount; }
+  obj.addHeat = function(amount) 
+  { 
+    heat += amount;
+    // cap burn and freeze amounts
+    if(Math.abs(heat) > typ.MAX_HEAT_ABS)
+      heat = sign(heat)*typ.MAX_HEAT_ABS;
+  }
   
   // injections
   obj.draw = function()
   {
     // size depends on age
     var half_size = typ.HALF_SIZE*age, size = 2*half_size;
+    
+    // draw fire or ice
+    if(heat != 0)
+    {
+      var fx_half_size = typ.SIZE*rand_between(0.8,1.0), 
+	  fx_size = 2*fx_half_size;
+      context.fillStyle = ((heat > 0) ? Cloud.COLOUR[0] : Cloud.COLOUR[2]) 
+			    + (Math.abs(heat)/typ.MAX_HEAT_ABS) + ")"; 
+      context.fillRect(pos.x()-fx_half_size, pos.y()-fx_half_size,
+			fx_size, fx_size);
+    }
+    
+    // draw poison
+    if(poison > 0)
+    {
+      var fx_half_size = typ.SIZE*rand_between(0.8,1.0), 
+	  fx_size = 2*fx_half_size;
+      context.lineWidth = 3;
+      context.strokeStyle = Cloud.COLOUR[1] + poison/typ.MAX_POISON + ")"; 
+      context.strokeRect(pos.x()-fx_half_size, pos.y()-fx_half_size,
+			fx_size, fx_size);
+    }
     
     // draw colour
     context.fillStyle = colour;
@@ -278,14 +320,6 @@ function Kitten(mum_resist, dad_resist, mum_pos)
     context.lineWidth = typ.OUTLINE_WIDTH;
     context.strokeStyle = typ.OUTLINE_COLOUR;
     context.strokeRect(pos.x()-half_size, pos.y()-half_size, size, size);
-    
-    // draw fire or ice
-    if(heat != 0)
-    {
-      context.fillStyle = ((heat > 0) ? Cloud.COLOUR[0] : Cloud.COLOUR[2]) 
-			    + (Math.abs(heat)/typ.MAX_HEAT_ABS) + ")"; 
-      context.fillRect(pos.x()-size, pos.y()-size, size*2, size*2);
-    }
     
   }
   
@@ -320,7 +354,9 @@ function Kitten(mum_resist, dad_resist, mum_pos)
     else if(heat)
     {
       // take damage
-      var heat_damage = typ.HEAT_DAMAGE * t_multiplier;
+      var heat_damage = typ.HEAT_DAMAGE 
+			* (1 - (heat > 0 ? resist[0] : resist[2])) 
+			* t_multiplier;
       hitpoints -= heat_damage;
       
       // decrease heat over time
@@ -349,7 +385,9 @@ function Kitten(mum_resist, dad_resist, mum_pos)
     pos.addXY(dir.x()*speed, dir.y()*speed);
     
     // turn the kitten
-    dir.addAngle(rand_between(-1, 1)*typ.TURN_SPEED*t_multiplier);
+    dir.addAngle(rand_between(-1, 1) 
+	  * (typ.TURN_SPEED + typ.POISON_TURN_SPEED * poison/typ.MAX_POISON) 
+	  * t_multiplier);
     
     // lap around
     lap_around(pos, typ.HALF_SIZE);   
@@ -359,6 +397,8 @@ function Kitten(mum_resist, dad_resist, mum_pos)
     {
       // reset counters and saturation cache
       Game.INSTANCE.addKill();
+      if(typ.worst == obj) typ.worst = null;
+      if(typ.best == obj) typ.best = null;
       typ.reset_counters();
       
       // make death sound

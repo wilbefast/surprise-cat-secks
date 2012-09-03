@@ -91,12 +91,13 @@ canvas.onmouseup = function(event)
 
 canvas.onmousemove = function(event)
 {
+
   Game.INSTANCE.injectMouseMove(event.layerX - canvas.offsetLeft,
 		     event.layerY - canvas.offsetTop);
   event.stopPropagation();
 }
 
-canvas.onmousewheel = function(event)
+var mousewheel = function(event)
 {
   var event = window.event || event;
   var delta = Math.max(-1, Math.min(1, (event.wheelDelta || -event.detail)));
@@ -104,6 +105,9 @@ canvas.onmousewheel = function(event)
   Game.INSTANCE.injectMouseWheel(delta);
   event.stopPropagation();
 }
+canvas.addEventListener("DOMMouseScroll", mousewheel, false);
+canvas.addEventListener("mousewheel", mousewheel, false);
+
 
 /* INPUT HANDLING -- WINDOW */
 
