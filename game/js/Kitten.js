@@ -32,10 +32,11 @@ Kitten.POISON_TURN_SPEED = 0.5;
 Kitten.MOVE_SPEED = 1.0;
 // hitpoints
 Kitten.MAX_HITPOINTS = 100;
-Kitten.HITPOINTS_REGEN = 0.9;
-Kitten.REPRODUCE_THRESHOLD = Kitten.MAX_HITPOINTS * 0.75;
-Kitten.REPRODUCE_COST = Kitten.MAX_HITPOINTS * 0.5;
+Kitten.HITPOINTS_REGEN = 0.7;
+Kitten.REPRODUCE_THRESHOLD = Kitten.MAX_HITPOINTS * 0.9;
+Kitten.REPRODUCE_COST = Kitten.MAX_HITPOINTS * 0.6;
 Kitten.START_HITPOINTS = Kitten.REPRODUCE_COST * 0.5;
+Kitten.PLAYER_TOUCH_DAMAGE = Kitten.MAX_HITPOINTS * 0.2;
 // repoduction
 Kitten.MAX_MUTATION = 0.2;
 Kitten.AGE_SPEED = 0.003;
@@ -277,6 +278,36 @@ function Kitten(mum_resist, dad_resist, mum_pos)
     return  (typ.objects.length < typ.MAX_NUMBER && heat == 0 && poison == 0 
 	      && hitpoints >= typ.REPRODUCE_THRESHOLD && age >= 1);
   }
+  obj.checkIfNearest = function(new_friend)
+  {
+    // only check potential mates
+    if(!new_friend.canMate())
+      return;
+    
+    // distance from this kitten to the other one
+    var span = new V2();
+    span.setFromTo(pos, new_friend.getPosition());
+    var new_distance2 = span.norm2();
+   
+    // the new friend is closer or the old one didn't exist in the first place
+    if(nearest.friend == null || nearest.distance2 > new_distance2)
+    {
+      // add the kitten as the new desired mate
+      nearest.distance2 = new_distance2;
+      nearest.friend = new_friend;
+      // inform the kitten that it has been selected
+      new_friend.matingRequest(obj, new_distance2);
+    }
+  }
+  obj.matingRequest = function(requester, requester_distance2)
+  {
+    // agree to requests if they are better than the current option
+    if(nearest.friend == null || nearest.distance2 > requester_distance2)
+    {
+      nearest.distance2 = requester_distance2;
+      nearest.friend = requester;
+    }
+  }
   
   // setters
   obj.addHitpoints = function(amount) { hitpoints += amount; }
@@ -327,7 +358,6 @@ function Kitten(mum_resist, dad_resist, mum_pos)
     context.lineWidth = typ.OUTLINE_WIDTH;
     context.strokeStyle = typ.OUTLINE_COLOUR;
     context.strokeRect(pos.x()-half_size, pos.y()-half_size, size, size);
-    
   }
   
   obj.update = function(t_multiplier)
@@ -393,10 +423,18 @@ function Kitten(mum_resist, dad_resist, mum_pos)
     // move the kitten
     pos.addXY(dir.x()*speed, dir.y()*speed);
     
-    // turn the kitten
-    dir.addAngle(rand_between(-1, 1) 
-	  * (typ.TURN_SPEED + typ.POISON_TURN_SPEED * poison/typ.MAX_POISON) 
-	  * t_multiplier);
+    
+    if(nearest.friend != null && obj.canMate())
+    {
+      // move towards nearest potential mate if ready to mate
+      dir.setFromTo(pos, nearest.friend.getPosition());
+      dir.normalise();
+    }
+    else
+      // turn the kitten randomly
+      dir.addAngle(rand_between(-1, 1) 
+	    * (typ.TURN_SPEED + typ.POISON_TURN_SPEED * poison/typ.MAX_POISON) 
+	    * t_multiplier);
     
     // lap around
     lap_around(pos, typ.HALF_SIZE);  
@@ -438,6 +476,7 @@ function Kitten(mum_resist, dad_resist, mum_pos)
 	// turn away from the player
 	dir.setFromTo(other.getPosition(), pos);
 	dir.normalise();
+	hitpoints -= typ.PLAYER_TOUCH_DAMAGE;
 	push(dir.x(), dir.y());
 	break;
       case Kitten:
@@ -456,4 +495,11 @@ function Kitten(mum_resist, dad_resist, mum_pos)
   
   /* RETURN INSTANCE */
   return obj;
+}
+
+// The great almighty kludge o' death!
+Kitten.checkIfNearest = function(from, to)
+{
+  if(from != null & to != null)
+    from.checkIfNearest(to);
 }

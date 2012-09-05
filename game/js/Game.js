@@ -54,7 +54,7 @@ Game.K_SPACE = 32;
 // mouse
 Game.M_FADE_SPEED = 0.01;
 // gameplay constants
-Game.STARTING_KITTENS = Kitten.MAX_NUMBER/3;
+Game.STARTING_KITTENS = 3; //Kitten.MAX_NUMBER/3;
 // object types
 Game.KITTEN_T = 0;
 Game.PLAYER_T = 1;
@@ -119,7 +119,7 @@ function Game()
     
     // create new objects
     new Player(canvas.width/2, canvas.height/2);
-    for(var i = 0; i < typ.STARTING_KITTENS; i++)
+    for(var i = 0; i < typ.STARTING_KITTENS-1; i++)
       new Kitten();
 
     // keyboard
@@ -350,7 +350,7 @@ function Game()
       
       // update game objects (generating collisions between same-type objects)
       updateObjects(Player.objects, delta_t);
-      updateObjects(Kitten.objects, delta_t, [generateCollision]);
+      updateObjects(Kitten.objects, delta_t, [generateCollision, Kitten.checkIfNearest]);
       updateObjects(Cloud.objects, delta_t);
       updateObjects(Stain.objects, delta_t);
       
