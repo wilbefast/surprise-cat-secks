@@ -22,14 +22,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 /*** (blood) STAIN CLASS ***/
 
 /// CLASS VARIABLES/CONSTANTS
-Stain.POS_VAR = 16;
+Stain.POS_VAR_REL = 0.8;
 Stain.SIZE_VAR = 0.5;
 Stain.AGING_SPEED = 0.005;
 Stain.AGE_VAR = 0.2;
 Stain.objects;
 
 /// INSTANCE ATTRIBUTES/METHODS
-function Stain(base_pos, base_size, init_colour)
+function Stain(base_pos, base_size, init_colour, opt_size_var, opt_pos_var_rel)
 {
   /* ATTRIBUTES 
   var a = x; 
@@ -38,14 +38,18 @@ function Stain(base_pos, base_size, init_colour)
   // receiver 
   var obj = this, typ = Stain;
   
+  // local
+  var pos_var = (opt_pos_var_rel != null ? opt_pos_var_rel : typ.POS_VAR_REL*base_size),
+      size_var = (opt_size_var != null ? opt_size_var : typ.SIZE_VAR);
+  
   // real attributes
   // V2: current position
-  var pos = new V2(base_pos.x()+rand_between(-typ.POS_VAR, typ.POS_VAR), 
-		   base_pos.y()+rand_between(-typ.POS_VAR, typ.POS_VAR)),	
+  var pos = new V2(base_pos.x()+rand_between(-pos_var, pos_var), 
+		   base_pos.y()+rand_between(-pos_var, pos_var)),	
   // real: between 0 (birth) and 1 (death)
       age = 0.0 + rand_between(0.0, typ.AGE_VAR),	
   // real: between 0 (birth) and typ.MAX_SIZE (death)
-      size = base_size + base_size*rand_between(-typ.SIZE_VAR, typ.SIZE_VAR),
+      size = base_size + base_size*rand_between(-size_var, size_var),
       half_size = size * 0.5,
   // string: incomplete "rgba(r,g,b," string
       colour = init_colour;

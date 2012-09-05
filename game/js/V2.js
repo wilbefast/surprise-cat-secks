@@ -111,6 +111,15 @@ function V2(init_x, init_y)
   }
   
   // modification
+  obj.ninety_left = function()
+  {
+    obj.setXY(y, -x);
+  }
+  obj.ninety_right = function()
+  {
+    obj.setXY(-y, x);
+  }
+  
   obj.addX = function(amount)
   {
     obj.setXY(x + amount, y);

@@ -182,7 +182,7 @@ function Kitten(mum_resist, dad_resist, mum_pos)
 	resist[i] = 0;
     }
     else
-      resist[i] = 0.0; //rand_between(0.0, 1.0);
+      resist[i] = rand_between(0.0, 1.0);
     
   }
   // cache the colour corresponding to these resistances

@@ -39,6 +39,10 @@ Player.RELOAD_TIME = 15;
 Player.WEAPON_CHANGE_TIME = 20;
 // images
 Player.IMG_FACE = load_image("skull_face.png");
+// footprints
+Player.FOOTPRINT_SIZE = 6;
+Player.FOOTPRINT_OFFSET = Player.FOOTPRINT_SIZE * 1.1;
+Player.FOOTPRINT_INTERVAL = 14;
 // colours, fonts, line widths, etc
 Player.BODY_COLOUR = "rgb(34, 34, 77)"; 
 Player.OUTLINE_COLOUR = "rgb(11, 11, 11)"; 
@@ -48,8 +52,23 @@ Player.GUN_COLOUR = "rgb(22, 22, 22)";
 Player.GUN_WIDTH = 4;
 Player.GUN_STRIP_WIDTH = Player.GUN_WIDTH/2;
 // sounds
-Player.SND_SPRAY = load_audio("spray.wav");
-Player.SND_SPRAY.loop = true;
+Player.SND_SPRAY_ARRAY = new Array();
+for(var i = 0; i < 3; i++)
+{
+  var file = "spray_";
+  switch(i) 
+  {
+    case Cloud.NAPALM: 		file += "fire.wav"; 	break;
+    case Cloud.NERVE_GAS: 	file += "gas.wav"; 	break;
+    case Cloud.NITROGEN: 	file += "ice.wav"; 	break;
+  }
+  Player.SND_SPRAY_ARRAY[i] = load_audio(file);
+  Player.SND_SPRAY_ARRAY[i].volume = 0.3;
+  Player.SND_SPRAY_ARRAY[i].loop = true;
+}
+Player.SND_STEPS = load_audio("steps.wav");
+Player.SND_STEPS.volume = 0.3;
+Player.SND_STEPS.loop = true;
 
 // CLASS VARIABLES
 Player.objects;
@@ -79,7 +98,10 @@ function Player(x, y)
   // enum in Cloud.NAPALM, Cloud.NERVE_GAS or Cloud.LIQUID NITROGEN
       weapon_type = Cloud.NAPALM,
   // a short delay prevent mouse-wheel from skipping over weapons
-      wpn_change_timer = 0;
+      wpn_change_timer = 0,
+  // a short delay between footprints
+      footprint_timer = 0,
+      foot_left = false;		// make sure we get off on the right foot!
   
   // initialise from parameters
   pos.setXY((x || 0.0), (y || 0.0));
@@ -110,6 +132,9 @@ function Player(x, y)
     if(wpn_change_timer > 0)
       return;
     
+    // mute the (soon to be) previous weapon's sound effect
+    typ.SND_SPRAY_ARRAY[weapon_type].pause();
+    
     // change weapon and reset timer
     weapon_type += delta || 1;
     wpn_change_timer = typ.WEAPON_CHANGE_TIME;
@@ -119,6 +144,7 @@ function Player(x, y)
       weapon_type -= Cloud.N_TYPES;
     else if(weapon_type < 0)
       weapon_type += Cloud.N_TYPES;
+    
   }
   
   obj.draw = function()
@@ -168,6 +194,29 @@ function Player(x, y)
     // apply move commands
     if(move.x() || move.y())
     {
+      // loop foot-steps sounds
+      if(typ.SND_STEPS.paused)
+	typ.SND_STEPS.play();
+      // create footprints at regular intervals
+      footprint_timer -= t_multiplier;
+      if(footprint_timer < 0)
+      {
+	// reset footstep timer
+	footprint_timer = typ.FOOTPRINT_INTERVAL;
+	// build footstep position
+	var step_pos = new V2();
+	  step_pos.setV2(facing.desired);
+	  step_pos.scale(-typ.FOOTPRINT_OFFSET);
+	  if(foot_left) 
+	    step_pos.ninety_left() 
+	  else 
+	    step_pos.ninety_right();
+	  foot_left = !foot_left;
+	  step_pos.addV2(pos);
+	// create the footstep
+	new Stain(step_pos, 8, "rgba(0,0,0,", 0.1, 0.1);
+      }
+      
       // reset desired facing
       if(!shoot && !use_mouse
       && (move.x() != facing.desired.x() || move.y() != facing.desired.y()))
@@ -182,7 +231,7 @@ function Player(x, y)
 	}
 	else
 	  // count down till direction change
-	  facing.change_timer--;
+	  facing.change_timer -= t_multiplier;
       }
 	
       // accelerate
@@ -194,8 +243,14 @@ function Player(x, y)
 	speed.setNorm(typ.SPEED_MAX);
     }
     else
+    {
       // reset direction-change timer
       facing.change_timer = typ.FACING_CHANGE_TIME*t_multiplier;
+      
+      // stop footstep sounds and reset footprint timer
+      typ.SND_STEPS.pause();
+      footprint_timer = typ.FOOTPRINT_INTERVAL;
+    }
     
     // change facing based on mouse if applicable
     if(use_mouse)
@@ -237,8 +292,8 @@ function Player(x, y)
     if(shoot)
     {
       // play spray sound
-      if(typ.SND_SPRAY.paused)
-	typ.SND_SPRAY.play();
+      if(typ.SND_SPRAY_ARRAY[weapon_type].paused)
+	typ.SND_SPRAY_ARRAY[weapon_type].play();
 	
       // make sure gun is loaded
       if(reloading > 0.0)
@@ -251,7 +306,7 @@ function Player(x, y)
       }
     }
     else
-      typ.SND_SPRAY.pause();
+      typ.SND_SPRAY_ARRAY[weapon_type].pause();
       
     
     // count down until next weapon-change is allowed
