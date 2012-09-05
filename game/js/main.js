@@ -45,14 +45,17 @@ function loading_screen()
   // keep checking till loaded
   if(left_to_load > 0)
   {
-    // draw "loading" text
-    context.fillStyle = Game.C_TEXT;
-    context.font = "48pt monospace";
-    context.textAlign = "center";
-    context.textBaseline = "middle";
-    var percent_loaded = 100 - Math.round((left_to_load/total_to_load)*100);
-    context.fillText("Loading " + percent_loaded + "%",
-		      canvas.width/2, canvas.height/2);
+    if(Game.INSTANCE.isFocus())
+    {
+      // draw "loading" text
+      context.fillStyle = Game.C_TEXT;
+      context.font = "48pt monospace";
+      context.textAlign = "center";
+      context.textBaseline = "middle";
+      var percent_loaded = 100 - Math.round((left_to_load/total_to_load)*100);
+      context.fillText("Loading " + percent_loaded + "%",
+			canvas.width/2, canvas.height/2);
+    }
 				    
     // check again in 0.5 seconds
     setTimeout("loading_screen()", 500);
