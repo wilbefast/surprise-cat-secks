@@ -5,23 +5,73 @@
     <meta name="author" content="William Dyce">
     <link rel="stylesheet" type="text/css" href="../main.css" />
     <link rel="shortcut icon" href="../img/favicon.gif" />
-    <title>Game</title>
+    <title>Surprise Cat Secks!</title>
   </head>
 
   <!-- scripts will use the canvas, so declare it before including them -->
   <body>
-    <p>Build 7 - 26/08/12 at 5:11pm CEST (ENTER to change weapon, SPACE to shoot)</p>
     
-    <canvas width="640" height="480" id='game_canvas'>
-      Can't load HTML 5 canvas: is your browser up to date?
-    </canvas>
+  <span id="canvas_box">
+    <h1>Surprise Cat Secks!</h1>
+    <table height="480" width="200">
+
+    <!-- Basic stats -->
+    <th colspan="2">Trivia</th>
+      <!-- Remaining cats -->
+      <tr>
+	  <td>Cats:</td>		
+	  <td colspawn="3" align="center" id="tdata_cats">0/0</td>
+      <tr>
+      <!-- Number of kills -->
+      <tr>
+	  <td>Kills:</td>		
+	  <td colspawn="3" align="center" id="tdata_kills">0</td>
+      <tr>
+      <!-- Time taken -->
+      <tr>
+	<td>Time:</td>		
+	<td align="center" id="tdata_time">00:00</td>
+      <tr>
+
+    <!-- Fitness (resistances) of cats -->
+    <th colspan="2">Immunity</th>
+      <!-- Min -->
+      <tr>
+	<td>Min:</td>		
+	<td align="center" id="tdata_min">0%</td>
+      <tr>
+      <!-- Mean -->
+      <tr>
+	<td>Mean:</td>		
+	<td align="center" id="tdata_mean">0%</td>
+      <tr>
+      <!-- Max -->
+      <tr>
+	<td>Max:</td>		
+	<td align="center" id="tdata_max">0</td>
+      <tr>
+    
+
+
+
+    </table>
+      <canvas width="640" height="480" id='game_canvas'>
+	<img src=../img/scs_preview.png />
+	<p>Can't load HTML 5 canvas: is your browser up to date?</p>
+      </canvas>
+  </span>
+
   </body>
 
   <!-- definition may vary depending on where your game is hosted -->
   <script type="text/javascript">
-    var DATA_LOCATION = "data/";
-    var canvas = document.getElementById('game_canvas');
-    var context = canvas.getContext('2d');
+    var DATA_LOCATION = "data/",
+      canvas = document.getElementById('game_canvas'),
+      context = canvas.getContext('2d'),
+      tdata_cats = document.getElementById('tdata_cats'),
+      tdata_kills = document.getElementById('tdata_kills'),
+      tdata_fitness = document.getElementById('tdata_fitness'),
+      tdata_time = document.getElementById('tdata_time');
   </script>
 
   <!-- include your scripts in the order they will be executed -->
@@ -32,6 +82,7 @@
 
   <!-- declare classes -->
   <script type="text/javascript" src="js/V2.js"></script>
+  <script type="text/javascript" src="js/Stain.js"></script>
   <script type="text/javascript" src="js/Kitten.js"></script>
   <script type="text/javascript" src="js/Cloud.js"></script>
   <script type="text/javascript" src="js/Player.js"></script>

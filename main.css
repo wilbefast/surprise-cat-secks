@@ -1,16 +1,78 @@
+@font-face 
+{
+  font-family: cube;
+  src: url('game/data/visitor.ttf');
+} 
+
+h1
+{
+  font-size:130%;
+  margin:0.5%;
+  padding:0%;
+}
+
 body
 {
   color:rgb(221,221,221);
   background-image:url('img/bg_eyes.png');
-  margin:0px;
-  padding:0px;
+  font-family:cube;
+  font-size:28px;
+  margin:1%;
+  padding:0%;
   text-align:center;
-  font-size:20px;
 }
+
+p
+{
+  text-align:center;
+}
+
+#text_box
+{
+  background-color:rgb(15,15,15);
+  border:3px solid rgb(221,221,221); 
+  display: inline-block;
+  margin:2%;
+  padding:2%;
+  text-align:left;
+  line-height:105%;
+} 
+
+#canvas_box
+{
+  background-color:rgb(15,15,15);
+  border:3px solid rgb(221,221,221); 
+  display: inline-block;
+  width:900px;
+  padding:1%;
+} 
 
 canvas 
 { 
-  border:2px solid rgb(15,15,15); 
+  border:3px solid rgb(221,221,221); 
+  padding:0%;
+  margin:0.5%;
+}
+
+table
+{
+  text-align:left;
+  float:left;
+  color:rgb(221,221,221); 
+  background-color:rgb(69, 69, 155);
+  border:3px solid rgb(221,221,221); 
+  padding:0.5%;
+  margin:0.5%;
+}
+td
+{
+}
+th
+{
+  border:2px solid rgb(221,221,221); 
+  text-decoration:underline;
+  text-align:center;
+  font-size:110%;
 }
 
 #game_canvas 
@@ -18,16 +80,7 @@ canvas
   cursor: none;
 }
 
-#draw:active 
+#game_canvas:active 
 { 
   cursor: none;
 }​
-
-.box
-{
-  background-color:rgb(15,15,15);
-  margin:10%;
-  padding:5%;
-  text-align:left;
-  line-height:130%;
-}
