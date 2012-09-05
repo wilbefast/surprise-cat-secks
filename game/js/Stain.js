@@ -30,7 +30,8 @@ Stain.MAX_DESIRED_OBJECTS = 35;
 Stain.objects;
 
 /// INSTANCE ATTRIBUTES/METHODS
-function Stain(base_pos, base_size, init_colour, opt_size_var, opt_pos_var_rel)
+function Stain(base_pos, base_size, init_colour, init_blood,
+	       opt_size_var, opt_pos_var_rel)
 {
   /* ATTRIBUTES 
   var a = x; 
@@ -53,7 +54,9 @@ function Stain(base_pos, base_size, init_colour, opt_size_var, opt_pos_var_rel)
       size = base_size + base_size*rand_between(-size_var, size_var),
       half_size = size * 0.5,
   // string: incomplete "rgba(r,g,b," string
-      colour = init_colour;
+      colour = init_colour,
+      blood = init_blood;
+      
   /* SUBROUTINES 
   var f = function(p1, ... ) { } 
   */
@@ -88,7 +91,12 @@ function Stain(base_pos, base_size, init_colour, opt_size_var, opt_pos_var_rel)
     return false;
   }
   
-  obj.collision = function(other) { }
+  obj.collision = function(other) 
+  {
+    // stain the feet of passers-by
+    if(other.getType() == Player && blood)
+      other.addFootRedness(Player.STAIN_RED_BONUS * (1-age));
+  }
   
   /* RETURN INSTANCE */
   typ.objects.push(obj);

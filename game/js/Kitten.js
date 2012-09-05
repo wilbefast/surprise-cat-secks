@@ -492,7 +492,7 @@ function Kitten(mum_resist, dad_resist, mum_pos)
       
       // create special-effects
       for(var i = 0; i < 3; i++)
-	new Stain(pos, 24, "rgba(255,0,0,");
+	new Stain(pos, 24, "rgba(255,0,0,", true); // is blood
       
       return true;
     }

@@ -44,6 +44,7 @@ Player.FOOTPRINT_SIZE = 6;
 Player.FOOTPRINT_OFFSET = Player.FOOTPRINT_SIZE * 1.1;
 Player.FOOTPRINT_INTERVAL = 14;
 Player.FOOTPRINT_RED_DECAY = 0.1; // 10 steps to clean shoes
+Player.STAIN_RED_BONUS = 0.06;
 // colours, fonts, line widths, etc
 Player.BODY_COLOUR = "rgb(34, 34, 77)"; 
 Player.OUTLINE_COLOUR = "rgb(11, 11, 11)"; 
@@ -131,7 +132,18 @@ function Player(x, y)
   obj.isMoving = function() { return moving; }
   
   // setters
-  obj.setFootRedness = function(new_redness) { foot_redness = new_redness; }
+  obj.setFootRedness = function(new_redness) 
+  { 
+    foot_redness = new_redness; 
+    if(foot_redness > 1)
+      foot_redness = 1;
+    if(foot_redness < 0)
+      foot_rednress = 0;
+  }
+  obj.addFootRedness = function(added_redness)
+  {
+    obj.setFootRedness(foot_redness + added_redness);
+  }
   
   // injections
   obj.change_weapon = function(delta)
@@ -225,7 +237,8 @@ function Player(x, y)
 	  foot_left = !foot_left;
 	  step_pos.addV2(pos);
 	// create the footstep
-	new Stain(step_pos, 8, "rgba("+(foot_redness*255)+",0,34,", 0.1, 0.1);
+	new Stain(step_pos, 8, "rgba("+(foot_redness*255)+",0,34,", 
+		  false, 0.1, 0.1);
 	// decay redness
 	if(foot_redness > typ.FOOTPRINT_RED_DECAY)
 	  foot_redness -= typ.FOOTPRINT_RED_DECAY;
@@ -336,7 +349,9 @@ function Player(x, y)
       wpn_change_timer = 0;
   }
   
-  obj.collision = function(other) { }
+  obj.collision = function(other) 
+  { 
+  }
   
   /* RETURN THE INSTANCE */
   typ.objects.push(obj);

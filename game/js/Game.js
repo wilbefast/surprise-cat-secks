@@ -347,6 +347,7 @@ function Game()
       // generate inter-object-type collisions
       generateObjectCollisions(Kitten.objects, Cloud.objects);
       generateObjectCollisions(Kitten.objects, Player.objects);
+      generateObjectCollisions(Stain.objects, Player.objects);
       
       // update game objects (generating collisions between same-type objects)
       updateObjects(Player.objects, delta_t);
@@ -358,7 +359,8 @@ function Game()
       if(Kitten.objects.length == 0)
       {
 	mode++;
-	Player.SND_SPRAY.pause();
+	for(var i = 0; i < 3; i++)
+	  Player.SND_SPRAY_ARRAY[i].pause();
       }
     }
     
