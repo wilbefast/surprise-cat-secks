@@ -249,7 +249,7 @@ function Kitten(mum_resist, dad_resist, mum_pos)
     // set fire to other cats!
     /* FIXME */
     else if(heat != 0)
-      mate.addHeat(heat/2);
+      friend.addHeat(heat/2);
   }
   
   var push = function(xx, yy)
