@@ -182,7 +182,7 @@ function Kitten(mum_resist, dad_resist, mum_pos)
 	resist[i] = 0;
     }
     else
-      resist[i] = rand_between(0.0, 1.0);
+      resist[i] = 0.0; //rand_between(0.0, 1.0);
     
   }
   // cache the colour corresponding to these resistances
@@ -197,6 +197,27 @@ function Kitten(mum_resist, dad_resist, mum_pos)
   /* SUBROUTINES 
   var f = function(p1, ... ) { } 
   */
+  
+  var collision_player = function(player)
+  {
+    // unclip
+    push(dir.x(), dir.y());
+    
+    // turn away from the player
+    dir.setFromTo(player.getPosition(), pos);
+    dir.normalise();
+    
+    // take damage to avoid swarming player if mate is on the other side
+    hitpoints -= typ.PLAYER_TOUCH_DAMAGE;
+    if(hitpoints < 0)
+    {
+      // only actually die if player is moving (ie. stepped on)
+      if(player.isMoving())
+	player.setFootRedness(1.0);
+      else
+	hitpoints = 1;
+    }
+  }
   
   var collision_cloud = function(cloud)
   {
@@ -483,19 +504,9 @@ function Kitten(mum_resist, dad_resist, mum_pos)
   { 
     switch(other.getType())
     {
-      case Cloud:
-	collision_cloud(other);
-	break;
-      case Player:
-	// turn away from the player
-	dir.setFromTo(other.getPosition(), pos);
-	dir.normalise();
-	hitpoints -= typ.PLAYER_TOUCH_DAMAGE;
-	push(dir.x(), dir.y());
-	break;
-      case Kitten:
-	collision_kitten(other);
-	break;
+      case Cloud: 	collision_cloud(other); 	break;
+      case Player: 	collision_player(other); 	break;
+      case Kitten: 	collision_kitten(other); 	break;
     }
     
   }

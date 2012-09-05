@@ -26,6 +26,7 @@ Stain.POS_VAR_REL = 0.8;
 Stain.SIZE_VAR = 0.5;
 Stain.AGING_SPEED = 0.005;
 Stain.AGE_VAR = 0.2;
+Stain.MAX_DESIRED_OBJECTS = 35;
 Stain.objects;
 
 /// INSTANCE ATTRIBUTES/METHODS
@@ -63,7 +64,7 @@ function Stain(base_pos, base_size, init_colour, opt_size_var, opt_pos_var_rel)
   
   // getters
   obj.getPosition = function() { return pos; }
-  obj.getRadius = function() { return 0; }
+  obj.getRadius = function() { return half_size; }
   obj.getType = function() { return typ; }
   
   // injections
@@ -73,10 +74,13 @@ function Stain(base_pos, base_size, init_colour, opt_size_var, opt_pos_var_rel)
     context.fillRect(pos.x()-half_size, pos.y()-half_size, size, size);
   }
   
-  obj.update = function(game, t_multiplier)
+  obj.update = function(t_multiplier)
   {
+    // slowly decay
+    age += typ.AGING_SPEED * t_multiplier
+      // countdown faster the more objects there are
+      * (typ.objects.length/typ.MAX_DESIRED_OBJECTS);
     // destroy at the end of the counter
-    age += typ.AGING_SPEED;
     if(age > 1.0)
       return true;
     

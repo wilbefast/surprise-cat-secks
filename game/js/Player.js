@@ -43,6 +43,7 @@ Player.IMG_FACE = load_image("skull_face.png");
 Player.FOOTPRINT_SIZE = 6;
 Player.FOOTPRINT_OFFSET = Player.FOOTPRINT_SIZE * 1.1;
 Player.FOOTPRINT_INTERVAL = 14;
+Player.FOOTPRINT_RED_DECAY = 0.1; // 10 steps to clean shoes
 // colours, fonts, line widths, etc
 Player.BODY_COLOUR = "rgb(34, 34, 77)"; 
 Player.OUTLINE_COLOUR = "rgb(11, 11, 11)"; 
@@ -99,9 +100,12 @@ function Player(x, y)
       weapon_type = Cloud.NAPALM,
   // a short delay prevent mouse-wheel from skipping over weapons
       wpn_change_timer = 0,
+  // only smush kittens if moving
+      moving = false,
   // a short delay between footprints
       footprint_timer = 0,
-      foot_left = false;		// make sure we get off on the right foot!
+      foot_left = false,		// let's get off on the right foot!
+      foot_redness = 0.0;		// stepping on cats is icky
   
   // initialise from parameters
   pos.setXY((x || 0.0), (y || 0.0));
@@ -124,6 +128,10 @@ function Player(x, y)
   obj.getRadius = function() { return typ.HALF_SIZE; }
   obj.getType = function() { return typ; }
   obj.getWeapon = function() { return weapon_type; }
+  obj.isMoving = function() { return moving; }
+  
+  // setters
+  obj.setFootRedness = function(new_redness) { foot_redness = new_redness; }
   
   // injections
   obj.change_weapon = function(delta)
@@ -194,6 +202,9 @@ function Player(x, y)
     // apply move commands
     if(move.x() || move.y())
     {
+      // kittens can now be crushed underfoot
+      moving = true;
+      
       // loop foot-steps sounds
       if(typ.SND_STEPS.paused)
 	typ.SND_STEPS.play();
@@ -214,7 +225,13 @@ function Player(x, y)
 	  foot_left = !foot_left;
 	  step_pos.addV2(pos);
 	// create the footstep
-	new Stain(step_pos, 8, "rgba(0,0,0,", 0.1, 0.1);
+	new Stain(step_pos, 8, "rgba("+(foot_redness*255)+",0,34,", 0.1, 0.1);
+	// decay redness
+	if(foot_redness > typ.FOOTPRINT_RED_DECAY)
+	  foot_redness -= typ.FOOTPRINT_RED_DECAY;
+	else
+	  foot_redness = 0;
+	
       }
       
       // reset desired facing
@@ -244,6 +261,9 @@ function Player(x, y)
     }
     else
     {
+      // kittens are not crushed if you are stationary
+      moving = false;
+      
       // reset direction-change timer
       facing.change_timer = typ.FACING_CHANGE_TIME*t_multiplier;
       
