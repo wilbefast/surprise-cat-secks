@@ -54,7 +54,7 @@ Game.K_SPACE = 32;
 // mouse
 Game.M_FADE_SPEED = 0.01;
 // gameplay constants
-Game.STARTING_KITTENS = 3; //Kitten.MAX_NUMBER/3;
+Game.STARTING_KITTENS = Kitten.MAX_NUMBER/3;
 // object types
 Game.KITTEN_T = 0;
 Game.PLAYER_T = 1;

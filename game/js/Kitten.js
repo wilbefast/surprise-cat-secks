@@ -43,9 +43,13 @@ Kitten.AGE_SPEED = 0.003;
 // counters
 Kitten.MAX_NUMBER = 35;
 // heat and cold
-Kitten.MAX_HEAT_ABS = 30;
-Kitten.HEAT_LOSS = Kitten.MAX_HEAT_ABS/70;
-Kitten.HEAT_DAMAGE = Kitten.HEAT_LOSS; // 1 heat loss means 1 damage
+Kitten.MAX_HEAT_ABS = 50;
+Kitten.FIRE_DISSIPATION = Kitten.MAX_HEAT_ABS/150;
+Kitten.FROST_DISSIPATION = Kitten.MAX_HEAT_ABS/100;
+Kitten.FIRE_PER_DAMAGE = 2;
+Kitten.FROST_PER_DAMAGE = 4;
+Kitten.BURN_DAMAGE = Kitten.FIRE_DISSIPATION/4; // 4 heat loss means 1 damage
+Kitten.CHILL_DAMAGE = Kitten.FROST_DISSIPATION/10; // 10 heat loss means 1 damage
 // poison from nerve-gas
 Kitten.POISON_PER_DAMAGE = 5;
 Kitten.MAX_POISON = 70;
@@ -209,15 +213,15 @@ function Kitten(mum_resist, dad_resist, mum_pos)
     switch(cloud_type)
     {
       case Cloud.NAPALM:
-	obj.addHeat(damage);
+	obj.addHeat(damage * typ.FIRE_PER_DAMAGE);
 	if(previous_heat < 0)
 	  damage -= -previous_heat;	// thaw from ice 
 	break;
       case Cloud.NERVE_GAS:
 	poison += typ.POISON_PER_DAMAGE*damage;
 	break;
-      case Cloud.LIQUID_NITROGEN:
-	obj.addHeat(-damage);
+      case Cloud.NITROGEN:
+	obj.addHeat(-damage * typ.FROST_PER_DAMAGE);
 	if(previous_heat > 0)
 	  damage -= previous_heat; 	// extinguish fire
 	break;
@@ -248,9 +252,15 @@ function Kitten(mum_resist, dad_resist, mum_pos)
     }
     
     // set fire to other cats!
-    /* FIXME */
-    else if(heat != 0)
-      friend.addHeat(heat/2);
+    else if(heat > 0)
+    {
+      var binj = friend.getHeat();
+      
+      
+      var heat_diff = heat - friend.getHeat();
+      if(heat_diff > 0)
+	friend.addHeat(heat_diff*0.5*(1-friend.getResistance()[Cloud.NAPALM]));
+    }
   }
   
   var push = function(xx, yy)
@@ -330,7 +340,8 @@ function Kitten(mum_resist, dad_resist, mum_pos)
     {
       var fx_half_size = typ.SIZE*rand_between(0.8,1.0), 
 	  fx_size = 2*fx_half_size;
-      context.fillStyle = ((heat > 0) ? Cloud.COLOUR[0] : Cloud.COLOUR[2]) 
+      context.fillStyle = ((heat > 0) ? Cloud.COLOUR[Cloud.NAPALM] 
+			      : Cloud.COLOUR[Cloud.NITROGEN]) 
 			    + (Math.abs(heat)/typ.MAX_HEAT_ABS) + ")"; 
       context.fillRect(pos.x()-fx_half_size, pos.y()-fx_half_size,
 			fx_size, fx_size);
@@ -342,7 +353,8 @@ function Kitten(mum_resist, dad_resist, mum_pos)
       var fx_half_size = typ.SIZE*rand_between(0.8,1.0), 
 	  fx_size = 2*fx_half_size;
       context.lineWidth = 3;
-      context.strokeStyle = Cloud.COLOUR[1] + poison/typ.MAX_POISON + ")"; 
+      context.strokeStyle = Cloud.COLOUR[Cloud.NERVE_GAS] 
+			    + poison/typ.MAX_POISON + ")"; 
       context.strokeRect(pos.x()-fx_half_size, pos.y()-fx_half_size,
 			fx_size, fx_size);
     }
@@ -392,13 +404,15 @@ function Kitten(mum_resist, dad_resist, mum_pos)
     if(heat)
     {
       // take damage
-      var heat_damage = typ.HEAT_DAMAGE 
-			* (1 - (heat > 0 ? resist[0] : resist[2])) 
+      var heat_damage = ((heat > 0) ? typ.BURN_DAMAGE : typ.CHILL_DAMAGE) 
+			* (1 - (heat > 0 ? resist[Cloud.NAPALM] 
+					 : resist[Cloud.NITROGEN])) 
 			* t_multiplier;
       hitpoints -= heat_damage;
       
       // decrease heat over time
-      var heat_loss = typ.HEAT_LOSS * t_multiplier;
+      var heat_loss = ((heat > 0) ? typ.FIRE_DISSIPATION 
+		      : typ.FROST_DISSIPATION) * t_multiplier;
       if(Math.abs(heat) < heat_loss)
 	heat = 0;
       else

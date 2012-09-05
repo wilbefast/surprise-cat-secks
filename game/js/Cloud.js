@@ -27,7 +27,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 Cloud.N_TYPES = 3;
 Cloud.NAPALM = 0;
 Cloud.NERVE_GAS = 1;
-Cloud.LIQUID_NITROGEN = 2;
+Cloud.NITROGEN = 2;
 // aging
 Cloud.AGING_SPEED = [0.012, 0.009, 0.01];
 Cloud.MAX_SIZE = [128, 256, 96];
