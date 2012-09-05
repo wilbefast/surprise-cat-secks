@@ -213,15 +213,15 @@ function Kitten(mum_resist, dad_resist, mum_pos)
     switch(cloud_type)
     {
       case Cloud.NAPALM:
-	obj.addHeat(cloud.getDamage() * typ.FIRE_PER_DAMAGE);
+	obj.addHeat(damage * typ.FIRE_PER_DAMAGE);
 	if(previous_heat < 0)
 	  damage -= -previous_heat;	// thaw from ice 
 	break;
       case Cloud.NERVE_GAS:
-	poison += typ.POISON_PER_DAMAGE*damage;
+	poison += damage * typ.POISON_PER_DAMAGE;
 	break;
       case Cloud.NITROGEN:
-	obj.addHeat(-cloud.getDamage() * typ.FROST_PER_DAMAGE);
+	obj.addHeat(-damage * typ.FROST_PER_DAMAGE);
 	if(previous_heat > 0)
 	  damage -= previous_heat; 	// extinguish fire
 	break;
@@ -259,7 +259,7 @@ function Kitten(mum_resist, dad_resist, mum_pos)
       
       var heat_diff = heat - friend.getHeat();
       if(heat_diff > 0)
-	friend.addHeat(heat_diff*0.5);
+	friend.addHeat(heat_diff*0.5*(1-friend.getResistance()[Cloud.NAPALM]));
     }
   }
   
