@@ -172,8 +172,6 @@ function Player(x, y)
       if(!shoot && !use_mouse
       && (move.x() != facing.desired.x() || move.y() != facing.desired.y()))
       {
-	console.log("K reset facing: " + facing.change_timer);
-	
 	// don't change direction immediately or we'll never face diagonals
 	if(facing.change_timer <= 0)
 	{

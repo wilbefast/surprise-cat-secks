@@ -64,6 +64,7 @@ Game.C_BACKGROUND = "rgb(186, 186, 100)";
 Game.C_TEXT = "rgb(69, 69, 155)";
 Game.C_OUTLINE = ["rgba(69, 69, 155, 0.9)", "rgba(69, 69, 155, 0.6)", 
 		  "rgba(69, 69, 155, 0.3)"];
+Game.C_CREAM = "rgb(221, 221, 221)";		  
 Game.C_MASK = "rgba(17, 17, 39, 0.9)";
 Game.OUTLINE_WIDTHS = 10;
 Game.CROSSHAIR_LINE_WIDTH = 3;
@@ -162,7 +163,7 @@ function Game()
   }
   
   // update dynamic objects (a variable number stored in an array)
-  var updateObjects = function(obj_array, delta_t, check_collisions)
+  var updateObjects = function(obj_array, delta_t, tween_functions)
   {
     // array of indexes of objects to be deleted
     var cleanUp = new Array();
@@ -178,18 +179,16 @@ function Game()
 	// add to cleanup list ;)
 	cleanUp.push(i);
       }
-      else if(check_collisions)
+      
+      // before each "tween" function on each pair of objects
+      if(tween_functions) for(f = 0; f < tween_functions.length; f++)
       {
-	// generate events for these objects
+	// for instance, generate collision events between objects if requested
 	for(var j = i+1; j < obj_array.length; j++)
 	{
 	  var b = obj_array[j];
-	  if(b != null && areColliding(a, b))
-	  {
-	    // generate collision
-	    a.collision(b);
-	    b.collision(a);
-	  }
+	  if (b != null)
+	    tween_functions[f](a, b);
 	}
       }
     }
@@ -351,7 +350,7 @@ function Game()
       
       // update game objects (generating collisions between same-type objects)
       updateObjects(Player.objects, delta_t);
-      updateObjects(Kitten.objects, delta_t, true);
+      updateObjects(Kitten.objects, delta_t, [generateCollision]);
       updateObjects(Cloud.objects, delta_t);
       updateObjects(Stain.objects, delta_t);
       
@@ -406,16 +405,18 @@ function Game()
 	if(Kitten.worst != null)
 	{
 	  var pos = Kitten.worst.getPosition();
-	  context.fillStyle = context.strokeStyle = Kitten.worst.getColour();
-	  context.fillText("WORST", pos.x(), pos.y()-24);
+	  context.fillStyle = context.strokeStyle = "rgb(255,255,255)";
+	  context.fillText(Math.floor(Kitten.worst.getFitness()*100) + "%", 
+			   pos.x(), pos.y()-24);
 	  context.strokeRect(pos.x()-Kitten.SIZE, pos.y()-Kitten.SIZE, 
 			    Kitten.SIZE*2, Kitten.SIZE*2);
 	}
 	if(Kitten.best != null)
 	{
 	  var pos = Kitten.best.getPosition();
-	  context.fillStyle = context.strokeStyle = Kitten.best.getColour();
-	  context.fillText("BEST", pos.x(), pos.y()-24);
+	  context.fillStyle = context.strokeStyle = typ.C_MASK;
+	  context.fillText(Math.floor(Kitten.best.getFitness()*100) + "%", 
+			   pos.x(), pos.y()-24);
 	  context.strokeRect(pos.x()-Kitten.SIZE, pos.y()-Kitten.SIZE, 
 			    Kitten.SIZE*2, Kitten.SIZE*2);
 	}	

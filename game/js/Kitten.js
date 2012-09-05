@@ -147,8 +147,14 @@ function Kitten(mum_resist, dad_resist, mum_pos)
   // [r, g, b]: resistance to fire, nerve-gas and nitro, between 0 and 1
       resist = new Array(),
   // string: "rgb(r,g,b)" format string corresponding to resistances
-      colour = new String();
+      colour = new String(),
+  // {friend : Kitten, distance2 : real} the closest kitten object, for mating
+      nearest = new Object();
   
+  // set up the 'nearest' dictionary
+  nearest.friend = null;
+  nearest.distance2 = 0.0;
+      
   // set position and normalise direction vector
   if(mum_pos)
     pos.setXY(mum_pos.x(), mum_pos.y());
@@ -221,31 +227,27 @@ function Kitten(mum_resist, dad_resist, mum_pos)
       hitpoints -= damage;
   }
   
-  var collision_kitten = function(mate)
+  var collision_kitten = function(friend)
   {
     // turn away from adult cats only
-    if(age < 1 || mate.getAge() >= 1)
+    if(age < 1 || friend.getAge() >= 1)
     {
-      dir.setFromTo(mate.getPosition(), pos);
+      dir.setFromTo(friend.getPosition(), pos);
       dir.normalise();
       push(dir.x(), dir.y());
     }
     
     // breed only if energy is full(ish), between adults
-    if(typ.objects.length < typ.MAX_NUMBER 
-    && heat == 0 && mate.getHeat() == 0
-    && poison == 0 && mate.getPoison() == 0
-    && hitpoints >= typ.REPRODUCE_THRESHOLD 
-    && mate.getHitpoints() >= typ.REPRODUCE_THRESHOLD
-    && age >= 1 && mate.getAge() >= 1)
+    if(obj.canMate() && friend.canMate())
     {
       hitpoints -= typ.REPRODUCE_COST;
-      mate.addHitpoints(-typ.REPRODUCE_COST);
-      new Kitten(resist, mate.getResistance(), pos);
+      friend.addHitpoints(-typ.REPRODUCE_COST);
+      new Kitten(resist, friend.getResistance(), pos);
       play_audio("cat_secks.wav");
     }
     
     // set fire to other cats!
+    /* FIXME */
     else if(heat != 0)
       mate.addHeat(heat/2);
   }
@@ -270,6 +272,11 @@ function Kitten(mum_resist, dad_resist, mum_pos)
   obj.getColour = function() { return colour; }
   obj.getHeat = function() { return heat; }
   obj.getPoison = function() { return poison; }
+  obj.canMate = function() 
+  { 
+    return  (typ.objects.length < typ.MAX_NUMBER && heat == 0 && poison == 0 
+	      && hitpoints >= typ.REPRODUCE_THRESHOLD && age >= 1);
+  }
   
   // setters
   obj.addHitpoints = function(amount) { hitpoints += amount; }
@@ -350,8 +357,9 @@ function Kitten(mum_resist, dad_resist, mum_pos)
       else
 	hitpoints += hitpoints_regen;
     }
+    
     // burn or freeze
-    else if(heat)
+    if(heat)
     {
       // take damage
       var heat_damage = typ.HEAT_DAMAGE 
@@ -366,8 +374,9 @@ function Kitten(mum_resist, dad_resist, mum_pos)
       else
 	heat -= heat_loss * sign(heat);
     }
+    
     // poison dissipation
-    else if(poison)
+    if(poison)
     {
       // take damage
       var poison_damage = typ.POISON_DAMAGE * t_multiplier;
@@ -390,7 +399,11 @@ function Kitten(mum_resist, dad_resist, mum_pos)
 	  * t_multiplier);
     
     // lap around
-    lap_around(pos, typ.HALF_SIZE);   
+    lap_around(pos, typ.HALF_SIZE);  
+    
+    // reset the nearest object to null (it will reset before the next update)
+    nearest.friend = null;
+    nearest.distance2 = 0.0;
     
     // destroy this object if its hitpoints fall too low
     if(hitpoints <= 0)

@@ -64,6 +64,8 @@ function loading_screen()
 
 function main() 
 {
+  // forced loaded state after 5 seconds
+  setTimeout("left_to_load = 0;", 5000);
   // loading screen will launch the game when resources are in memory
   loading_screen();
 }
