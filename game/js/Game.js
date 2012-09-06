@@ -115,7 +115,7 @@ function Game()
     Kitten.best = Kitten.worst = null;
     Player.objects = new Array();
     Cloud.objects = new Array();
-    Stain.objects = new Array();
+    Decal.objects = new Array();
     
     // create new objects
     new Player(canvas.width/2, canvas.height/2);
@@ -347,13 +347,13 @@ function Game()
       // generate inter-object-type collisions
       generateObjectCollisions(Kitten.objects, Cloud.objects);
       generateObjectCollisions(Kitten.objects, Player.objects);
-      generateObjectCollisions(Stain.objects, Player.objects);
+      generateObjectCollisions(Decal.objects, Player.objects);
       
       // update game objects (generating collisions between same-type objects)
       updateObjects(Player.objects, delta_t);
       updateObjects(Kitten.objects, delta_t, [generateCollision, Kitten.checkIfNearest]);
       updateObjects(Cloud.objects, delta_t);
-      updateObjects(Stain.objects, delta_t);
+      updateObjects(Decal.objects, delta_t);
       
       // check if there are no cats left
       if(Kitten.objects.length == 0)
@@ -392,7 +392,7 @@ function Game()
       // gameplay draw loop
       case typ.PLAY:
 	// draw objects
-	drawObjects(Stain.objects);
+	drawObjects(Decal.objects);
 	drawObjects(Kitten.objects);
 	drawObjects(Cloud.objects);
 	drawObjects(Player.objects);

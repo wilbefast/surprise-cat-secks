@@ -19,18 +19,18 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-/*** (blood) STAIN CLASS ***/
+/*** DECAL CLASS, for blood stains, etc ***/
 
 /// CLASS VARIABLES/CONSTANTS
-Stain.POS_VAR_REL = 0.8;
-Stain.SIZE_VAR = 0.5;
-Stain.AGING_SPEED = 0.005;
-Stain.AGE_VAR = 0.2;
-Stain.MAX_DESIRED_OBJECTS = 35;
-Stain.objects;
+Decal.POS_VAR_REL = 0.8;
+Decal.SIZE_VAR = 0.5;
+Decal.AGING_SPEED = 0.005;
+Decal.AGE_VAR = 0.2;
+Decal.MAX_DESIRED_OBJECTS = 35;
+Decal.objects;
 
 /// INSTANCE ATTRIBUTES/METHODS
-function Stain(base_pos, base_size, init_colour, init_blood,
+function Decal(base_pos, base_size, init_colour, init_blood,
 	       opt_size_var, opt_pos_var_rel)
 {
   /* ATTRIBUTES 
@@ -38,7 +38,7 @@ function Stain(base_pos, base_size, init_colour, init_blood,
   */
   
   // receiver 
-  var obj = this, typ = Stain;
+  var obj = this, typ = Decal;
   
   // local
   var pos_var = (opt_pos_var_rel != null ? opt_pos_var_rel : typ.POS_VAR_REL*base_size),

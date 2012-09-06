@@ -237,7 +237,7 @@ function Player(x, y)
 	  foot_left = !foot_left;
 	  step_pos.addV2(pos);
 	// create the footstep
-	new Stain(step_pos, 8, "rgba("+(foot_redness*255)+",0,34,", 
+	new Decal(step_pos, 8, "rgba("+(foot_redness*255)+",0,34,", 
 		  false, 0.1, 0.1);
 	// decay redness
 	if(foot_redness > typ.FOOTPRINT_RED_DECAY)
