@@ -29,7 +29,10 @@ Kitten.PUSH_LENGTH = 2.0;
 // movement
 Kitten.TURN_SPEED = 0.1;
 Kitten.POISON_TURN_SPEED = 0.5;
-Kitten.MOVE_SPEED = 1.0;
+Kitten.MOVE_SPEED = 1.5;
+Kitten.MIN_DISTANCE2_FROM_PLAYER = Math.pow(canvas.width/7, 2);
+Kitten.MAX_FEAR = 100;
+Kitten.OLDUN_SPEED_PENALTY = 0.6;
 // hitpoints
 Kitten.MAX_HITPOINTS = 100;
 Kitten.HITPOINTS_REGEN = 0.7;
@@ -39,7 +42,9 @@ Kitten.START_HITPOINTS = Kitten.REPRODUCE_COST * 0.5;
 Kitten.PLAYER_TOUCH_DAMAGE = Kitten.MAX_HITPOINTS * 0.2;
 // repoduction
 Kitten.MAX_MUTATION = 0.2;
-Kitten.AGE_SPEED = 0.003;
+Kitten.DECREPITUDE_SPEED = 0.0007;
+Kitten.REPRODUCE_MAX_DECREPITUDE = 0.9;
+Kitten.MATURE_SPEED = 0.003;
 // counters
 Kitten.MAX_NUMBER = 35;
 // heat and cold
@@ -142,7 +147,9 @@ function Kitten(mum_resist, dad_resist, mum_pos)
   // V2: current direction
       dir = new V2(rand_sign(), rand_sign()),
   // real: between 0 and 1, 1 is mature and can repoduce
-      age = (mum_resist && dad_resist) ? 0.0 : rand_between(0.5, 1.0), 
+      maturity = (mum_resist && dad_resist) ? 0.0 : rand_between(0.5, 1.0), 
+  // real: between 0 and 1, 1 is death by old age
+      decrepitude = 0.0,
   // int: remaining hitpoints
       hitpoints = typ.START_HITPOINTS,	
   // int: body-heat, where positive means burning and negative freezing
@@ -154,7 +161,9 @@ function Kitten(mum_resist, dad_resist, mum_pos)
   // string: "rgb(r,g,b)" format string corresponding to resistances
       colour = new String(),
   // {friend : Kitten, distance2 : real} the closest kitten object, for mating
-      nearest = new Object();
+      nearest = new Object(),
+  // real : frightened cats will not try to mate until at a safe distance
+      fear = 0;
   
   // set up the 'nearest' dictionary
   nearest.friend = null;
@@ -254,15 +263,7 @@ function Kitten(mum_resist, dad_resist, mum_pos)
   }
   
   var collision_kitten = function(friend)
-  {
-    // turn away from adult cats only
-    if(age < 1 || friend.getAge() >= 1)
-    {
-      dir.setFromTo(friend.getPosition(), pos);
-      dir.normalise();
-      push(dir.x(), dir.y());
-    }
-    
+  { 
     // breed only if energy is full(ish), between adults
     if(obj.canMate() && friend.canMate())
     {
@@ -282,10 +283,21 @@ function Kitten(mum_resist, dad_resist, mum_pos)
       if(heat_diff > 0)
 	friend.addHeat(heat_diff*0.5*(1-friend.getResistance()[Cloud.NAPALM]));
     }
+    
+    // turn away from adult cats only
+    if(maturity < 1 || friend.getMaturity() >= 1)
+    {
+      dir.setFromTo(friend.getPosition(), pos);
+      dir.normalise();
+      push(dir.x(), dir.y());
+    }
   }
   
   var push = function(xx, yy)
   {
+    // cluster fcucks are strictly forbidden!
+    fear = typ.MAX_FEAR;
+    
     pos.addXY(xx*typ.PUSH_LENGTH, yy*typ.PUSH_LENGTH);
   }
   
@@ -295,11 +307,11 @@ function Kitten(mum_resist, dad_resist, mum_pos)
   
   // getters
   obj.getPosition = function() { return pos; }
-  obj.getRadius = function() { return typ.HALF_SIZE*age; }
+  obj.getRadius = function() { return typ.HALF_SIZE*maturity; }
   obj.getType = function() { return typ; }
   obj.getHitpoints = function() { return hitpoints; }
   obj.getResistance = function() { return resist; }
-  obj.getAge = function() { return age; }
+  obj.getMaturity = function() { return maturity; }
   obj.getFitness = function() { return total_fitness; }
   obj.getColour = function() { return colour; }
   obj.getHeat = function() { return heat; }
@@ -307,7 +319,9 @@ function Kitten(mum_resist, dad_resist, mum_pos)
   obj.canMate = function() 
   { 
     return  (typ.objects.length < typ.MAX_NUMBER && heat == 0 && poison == 0 
-	      && hitpoints >= typ.REPRODUCE_THRESHOLD && age >= 1);
+	      && hitpoints >= typ.REPRODUCE_THRESHOLD && maturity >= 1
+	      && decrepitude <= typ.REPRODUCE_MAX_DECREPITUDE
+	      && fear == 0);
   }
   obj.checkIfNearest = function(new_friend)
   {
@@ -353,8 +367,8 @@ function Kitten(mum_resist, dad_resist, mum_pos)
   // injections
   obj.draw = function()
   {
-    // size depends on age
-    var half_size = typ.HALF_SIZE*age, size = 2*half_size;
+    // size depends on maturity
+    var half_size = typ.HALF_SIZE*maturity, size = 2*half_size;
     
     // draw fire or ice
     if(heat != 0)
@@ -384,7 +398,7 @@ function Kitten(mum_resist, dad_resist, mum_pos)
     context.fillStyle = colour;
     context.fillRect(pos.x()-half_size, pos.y()-half_size, size, size);
     // draw face
-    if(age == 1.0)
+    if(maturity == 1.0)
       context.drawImage(typ.IMG_FACE, 
 			pos.x()-typ.HALF_SIZE, pos.y()-typ.HALF_SIZE);		     
     // draw outline
@@ -395,30 +409,50 @@ function Kitten(mum_resist, dad_resist, mum_pos)
   
   obj.update = function(t_multiplier)
   { 
+    // slow down if young
+    // slow down if old
     // slow down if cold, speed up if hot
-    var speed = typ.MOVE_SPEED * age * t_multiplier;
+    var speed = typ.MOVE_SPEED * maturity * t_multiplier 
+      * (1 - typ.OLDUN_SPEED_PENALTY + (1-decrepitude)*typ.OLDUN_SPEED_PENALTY);
     if(heat != 0)
       speed *= (1.0 + heat/typ.MAX_HEAT_ABS);
     
-    // get older
-    if(age != 1.0)
+    // grow up
+    if(maturity != 1.0)
     {
-      if(age - typ.AGE_SPEED >= 1.0)
-	age = 1.0;
+      if(maturity + typ.MATURE_SPEED*t_multiplier >= 1.0)
+	maturity = 1.0;
       else
-	age += typ.AGE_SPEED;
+	maturity += typ.MATURE_SPEED*t_multiplier;
     }
-    // regenerate health
-    else if(!heat && !poison && hitpoints < typ.MAX_HITPOINTS 
-    && typ.objects.length < typ.MAX_NUMBER)
+    // fully grown
+    else
     {
-      // faster regenerate the fewer kittens there are
-      var hitpoints_regen 
-	= typ.HITPOINTS_REGEN * t_multiplier * (1.0-typ.saturation);
-      if(hitpoints > typ.MAX_HITPOINTS - hitpoints_regen)
-	hitpoints = typ.MAX_HITPOINTS;
+      // regenerate health
+      if(!heat && !poison && hitpoints < typ.MAX_HITPOINTS 
+      && typ.objects.length < typ.MAX_NUMBER)
+      {
+	// faster regenerate the fewer kittens there are
+	var hitpoints_regen 
+	  = typ.HITPOINTS_REGEN * t_multiplier * (1.0-typ.saturation);
+	if(hitpoints > typ.MAX_HITPOINTS - hitpoints_regen)
+	  hitpoints = typ.MAX_HITPOINTS;
+	else
+	  hitpoints += hitpoints_regen;
+      }
+      
+      // get old
+      if(decrepitude + typ.DECREPITUDE_SPEED*t_multiplier >= 1.0)
+      {
+	if(typ.worst == obj) typ.worst = null;
+	if(typ.best == obj) typ.best = null;
+	typ.reset_counters();
+	
+	// destroy object
+	return true;
+      }
       else
-	hitpoints += hitpoints_regen;
+	decrepitude += typ.DECREPITUDE_SPEED*t_multiplier;
     }
     
     // burn or freeze
@@ -458,13 +492,27 @@ function Kitten(mum_resist, dad_resist, mum_pos)
     // move the kitten
     pos.addXY(dir.x()*speed, dir.y()*speed);
     
+    /* CHOOSE A NEW DIRECTION */
     
-    if(nearest.friend != null && obj.canMate())
+    // away from player
+    var from_player = new V2();
+      from_player.setFromTo(Player.objects[0].getPosition(), pos);
+    if(from_player.norm2() < typ.MIN_DISTANCE2_FROM_PLAYER)
+    {
+      dir.setV2(from_player);
+      dir.normalise();
+      fear = typ.MAX_FEAR;
+    }
+      
+    // towards mate
+    else if(nearest.friend != null && obj.canMate())
     {
       // move towards nearest potential mate if ready to mate
       dir.setFromTo(pos, nearest.friend.getPosition());
       dir.normalise();
     }
+    
+    // randomly
     else
       // turn the kitten randomly
       dir.addAngle(rand_between(-1, 1) 
@@ -477,6 +525,12 @@ function Kitten(mum_resist, dad_resist, mum_pos)
     // reset the nearest object to null (it will reset before the next update)
     nearest.friend = null;
     nearest.distance2 = 0.0;
+    
+    // stop being afraid
+    if(fear - t_multiplier < 0)
+      fear = 0;
+    else
+      fear -= t_multiplier;
     
     // destroy this object if its hitpoints fall too low
     if(hitpoints <= 0)
@@ -494,6 +548,7 @@ function Kitten(mum_resist, dad_resist, mum_pos)
       for(var i = 0; i < 3; i++)
 	new Decal(pos, 24, "rgba(255,0,0,", true); // is blood
       
+      // destroy object
       return true;
     }
     else
