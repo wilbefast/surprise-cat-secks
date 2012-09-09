@@ -195,9 +195,9 @@ function Kitten(mum_resist, dad_resist, mum_pos)
     
   }
   // cache the colour corresponding to these resistances
-  var r = Math.floor(255*(1.0-resist[0])), 
-      g = Math.floor(255*(1.0-resist[1])), 
-      b = Math.floor(255*(1.0-resist[2]));
+  var r = Math.floor(255*(1.0-(resist[1]+resist[2])/2)), 
+      g = Math.floor(255*(1.0-(resist[0]+resist[2])/2)), 
+      b = Math.floor(255*(1.0-(resist[0]+resist[1])/2));
   colour =  "rgb(" + r + "," + g + "," + b + ")";
   
   // cache total fitness as this will not change
