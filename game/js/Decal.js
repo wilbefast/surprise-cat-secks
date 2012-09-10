@@ -28,9 +28,11 @@ Decal.AGING_SPEED = 0.005;
 Decal.AGE_VAR = 0.2;
 Decal.MAX_DESIRED_OBJECTS = 35;
 Decal.objects;
+Decal.BLOOD = 0;
+Decal.FOOTPRINT = 1;
 
 /// INSTANCE ATTRIBUTES/METHODS
-function Decal(base_pos, base_size, init_colour, init_blood,
+function Decal(base_pos, base_size, init_colour, init_type,
 	       opt_size_var, opt_pos_var_rel)
 {
   /* ATTRIBUTES 
@@ -55,7 +57,7 @@ function Decal(base_pos, base_size, init_colour, init_blood,
       half_size = size * 0.5,
   // string: incomplete "rgba(r,g,b," string
       colour = init_colour,
-      blood = init_blood;
+      decal_type = init_type;
       
   /* SUBROUTINES 
   var f = function(p1, ... ) { } 
@@ -94,7 +96,7 @@ function Decal(base_pos, base_size, init_colour, init_blood,
   obj.collision = function(other) 
   {
     // stain the feet of passers-by
-    if(other.getType() == Player && blood)
+    if(other.getType() == Player && decal_type == typ.BLOOD)
       other.addFootRedness(Player.STAIN_RED_BONUS * (1-age));
   }
   

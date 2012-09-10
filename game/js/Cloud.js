@@ -24,31 +24,37 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 /// CLASS CONSTANTS
 // types of cloud, used to index other constants
-Cloud.N_TYPES = 3;
+Cloud.N_TYPES = 4;
 Cloud.NAPALM = 0;
 Cloud.NERVE_GAS = 1;
 Cloud.NITROGEN = 2;
+Cloud.FERTILITY = 3;
+Cloud.HEART = 4;	// a pseudo-cloud using custom draw code
 // aging
-Cloud.AGING_SPEED = [0.012, 0.009, 0.01];
-Cloud.MAX_SIZE = [128, 256, 96];
+Cloud.AGING_SPEED = [0.012, 0.009, 0.01, 0.016, 0.021];
+Cloud.MAX_SIZE = [128, 256, 96, 64, 48];
 // speed
-Cloud.SPEED = [2.4, 2.2, 2.6];
-Cloud.FRICTION = [0.01, 0.017, 0.004];
+Cloud.SPEED = [2.4, 2.2, 2.6, 3.1, 0];
+Cloud.FRICTION = [0.01, 0.017, 0.004, 0.002, 0];
 // damage
-Cloud.BASE_DAMAGE = [2.7, 0.4, 2.3];
+Cloud.BASE_DAMAGE = [2.7, 0.4, 2.3, 1.0, 0.0];
 // colour
-Cloud.COLOUR = ["rgba(255, 200, 0,", "rgba(145, 255, 0,", "rgba(0, 255, 255,"]
+Cloud.COLOUR = ["rgba(255, 200, 0,", "rgba(145, 255, 0,", "rgba(0, 255, 255,",
+		"rgba(255, 0, 200, ", "rgba(255, 50, 200," ]
 
 /// CLASS CONSTANTS
 // objects of this class
 Cloud.objects;
 
 /// INSTANCE ATTRIBUTES/METHODS
-function Cloud(init_type, init_pos, init_dir, bonus_speed)
+function Cloud(init_type, init_pos, init_dir, bonus_speed, custom_draw)
 {
   /* ATTRIBUTES 
   var a = x; 
   */
+  
+  if(!bonus_speed) bonus_speed = new V2();
+  if(!init_dir) init_dir = new V2();
   
   // receiver 
   var obj = this, typ = Cloud;
@@ -73,6 +79,12 @@ function Cloud(init_type, init_pos, init_dir, bonus_speed)
   var f = function(p1, ... ) { } 
   */
   
+  var default_draw = function(pos, size, colour)
+  {
+    context.fillStyle = colour;
+    context.fillRect(pos.x()-half_size, pos.y()-half_size, size, size);
+  }
+  
   /* METHODS 
     (obj.f = function(p1, ... ) { }
   */
@@ -87,8 +99,9 @@ function Cloud(init_type, init_pos, init_dir, bonus_speed)
   // injections
   obj.draw = function()
   {
-    context.fillStyle = typ.COLOUR[cloud_type] + (1.0-age) + ")";
-    context.fillRect(pos.x()-half_size, pos.y()-half_size, size, size);
+    var colour = typ.COLOUR[cloud_type] + (1.0-age) + ")";
+    return (custom_draw != null) ? custom_draw(pos, size, colour) 
+				  : default_draw(pos, size, colour)
   }
   
   obj.update = function(t_multiplier)

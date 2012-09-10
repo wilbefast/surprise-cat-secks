@@ -55,14 +55,15 @@ Player.GUN_WIDTH = 4;
 Player.GUN_STRIP_WIDTH = Player.GUN_WIDTH/2;
 // sounds
 Player.SND_SPRAY_ARRAY = new Array();
-for(var i = 0; i < 3; i++)
+for(var i = 0; i < Cloud.N_TYPES; i++)
 {
   var file = "spray_";
   switch(i) 
   {
-    case Cloud.NAPALM: 		file += "fire.wav"; 	break;
-    case Cloud.NERVE_GAS: 	file += "gas.wav"; 	break;
-    case Cloud.NITROGEN: 	file += "ice.wav"; 	break;
+    case Cloud.NAPALM: 		file += "fire.wav"; 		break;
+    case Cloud.NERVE_GAS: 	file += "gas.wav"; 		break;
+    case Cloud.NITROGEN: 	file += "ice.wav"; 		break;
+    case Cloud.FERTILITY: 	file += "fertility.wav"; 	break;
   }
   Player.SND_SPRAY_ARRAY[i] = load_audio(file);
   Player.SND_SPRAY_ARRAY[i].volume = 0.3;
@@ -238,7 +239,7 @@ function Player(x, y)
 	  step_pos.addV2(pos);
 	// create the footstep
 	new Decal(step_pos, 8, "rgba("+(foot_redness*255)+",0,34,", 
-		  false, 0.1, 0.1);
+		  Decal.FOOTPRINT, 0.1, 0.1);
 	// decay redness
 	if(foot_redness > typ.FOOTPRINT_RED_DECAY)
 	  foot_redness -= typ.FOOTPRINT_RED_DECAY;

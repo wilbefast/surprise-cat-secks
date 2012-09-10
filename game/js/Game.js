@@ -404,6 +404,7 @@ function Game()
 	// draw marker on best and worst cats
 	context.font = "16pt cube";
 	context.lineWidth = 1;
+	// worst
 	if(Kitten.worst != null)
 	{
 	  var pos = Kitten.worst.getPosition();
@@ -413,6 +414,7 @@ function Game()
 	  context.strokeRect(pos.x()-Kitten.SIZE, pos.y()-Kitten.SIZE, 
 			    Kitten.SIZE*2, Kitten.SIZE*2);
 	}
+	// best
 	if(Kitten.best != null)
 	{
 	  var pos = Kitten.best.getPosition();
