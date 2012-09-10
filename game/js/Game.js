@@ -97,7 +97,7 @@ function Game()
       m_shoot,		// boolean: is the mouse shoot key being pressed?
       m_pos,		// V2: {x,y} position of the mouse
       m_direction,	// V2: {x,y} normalised player->mouse direction
-      m_use,		// real: value between 0 and 1, move fades if not used
+      m_visibility,		// Bank: value between 0 and 1, mouse fades if not used
       focus,		// boolean: pause if we lose focus
       time,		// time taken to kill/breed all the cats	
       kills,		// total number of cats killed
@@ -130,7 +130,7 @@ function Game()
     m_direction = new V2();
     m_shoot = false;
     m_wheel_offset = 0;
-    m_use = 0.0;
+    m_visibility = new Bank();
     
     // for score
     time = 0.0;
@@ -268,7 +268,8 @@ function Game()
   {
     // diamond shape
     context.beginPath();
-    context.strokeStyle = Cloud.COLOUR[Player.objects[0].getWeapon()] + m_use + ")";
+    context.strokeStyle = Cloud.COLOUR[Player.objects[0].getWeapon()] 
+					  + m_visibility.getBalance() + ")";
     context.moveTo(m_pos.x(), m_pos.y()-typ.CROSSHAIR_SIZE);	// top
     context.lineTo(m_pos.x()+typ.CROSSHAIR_SIZE, m_pos.y());	// right
     context.lineTo(m_pos.x(), m_pos.y()+typ.CROSSHAIR_SIZE);	// bottom
@@ -301,7 +302,7 @@ function Game()
       typ.music.pause();
       
       // redraw once without the cursor
-      m_use = 0;
+      m_visibility.setEmpty();
       obj.injectDraw();
       
       // apply mask
@@ -337,13 +338,8 @@ function Game()
       
       // gradually hide the cursor
       if(!m_shoot)
-      {
-	if(m_use > typ.M_FADE_SPEED)
-	  m_use -= typ.M_FADE_SPEED;
-	else
-	  m_use = 0.0;
-      }
-      
+	m_visibility.withdraw(typ.M_FADE_SPEED * delta_t);
+ 
       // generate inter-object-type collisions
       generateObjectCollisions(Kitten.objects, Cloud.objects);
       generateObjectCollisions(Kitten.objects, Player.objects);
@@ -399,7 +395,7 @@ function Game()
 	// draw outline overlay
 	draw_outline();
 	// draw crosshair
-	if(m_use > 0)
+	if(!m_visibility.isEmpty())
 	  draw_crosshair();
 	// draw marker on best and worst cats
 	context.font = "16pt cube";
@@ -466,7 +462,7 @@ function Game()
 	  m_pos.setXY(x, y);
 	  injectMouseDir(x, y);
 	  // make cursor appear
-	  m_use = 1.0;
+	  m_visibility.setFull();
 	  break;
       
 	case typ.TUTORIAL:
@@ -497,11 +493,10 @@ function Game()
       injectMouseDir(x, y);
     
     // cursor visible only if used
-    m_use = Math.max(0.5, m_use);
-    if(m_use < 1.0 - typ.M_FADE_SPEED)
-      m_use += typ.M_FADE_SPEED;
+    if(m_visibility.getBalance() < 0.5)
+      m_visibility.setBalance(0.5);
     else
-      m_use = 1.0;
+      m_visibility.deposit(typ.M_FADE_SPEED);
   }
   
   obj.injectMouseWheel = function(delta)

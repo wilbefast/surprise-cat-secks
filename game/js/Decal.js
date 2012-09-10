@@ -50,8 +50,8 @@ function Decal(base_pos, base_size, init_colour, init_type,
   // V2: current position
   var pos = new V2(base_pos.x()+rand_between(-pos_var, pos_var), 
 		   base_pos.y()+rand_between(-pos_var, pos_var)),	
-  // real: between 0 (birth) and 1 (death)
-      age = 0.0 + rand_between(0.0, typ.AGE_VAR),	
+  // Bank: real between 0 (birth) and 1 (death)
+      age = new Bank(0.0 + rand_between(0.0, typ.AGE_VAR)),	
   // real: between 0 (birth) and typ.MAX_SIZE (death)
       size = base_size + base_size*rand_between(-size_var, size_var),
       half_size = size * 0.5,
@@ -75,29 +75,26 @@ function Decal(base_pos, base_size, init_colour, init_type,
   // injections
   obj.draw = function()
   {
-    context.fillStyle = colour + (1.0-age) + ")";
+    context.fillStyle = colour + (1.0-age.getBalance()) + ")";
     context.fillRect(pos.x()-half_size, pos.y()-half_size, size, size);
   }
   
   obj.update = function(t_multiplier)
   {
     // slowly decay
-    age += typ.AGING_SPEED * t_multiplier
+    age.deposit(typ.AGING_SPEED * t_multiplier
       // countdown faster the more objects there are
-      * (typ.objects.length/typ.MAX_DESIRED_OBJECTS);
-    // destroy at the end of the counter
-    if(age > 1.0)
-      return true;
+      * (typ.objects.length/typ.MAX_DESIRED_OBJECTS));
     
-    // don't destroy this object
-    return false;
+    // destroy at the end of the counter
+    return (age.isFull());
   }
   
   obj.collision = function(other) 
   {
     // stain the feet of passers-by
     if(other.getType() == Player && decal_type == typ.BLOOD)
-      other.addFootRedness(Player.STAIN_RED_BONUS * (1-age));
+      other.addFootRedness(Player.STAIN_RED_BONUS * (1-age.getBalance()));
   }
   
   /* RETURN INSTANCE */

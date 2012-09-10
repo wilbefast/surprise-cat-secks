@@ -52,7 +52,7 @@ function Timer(starting_time, max_time, init_auto_reset)
   obj.unset = function() { time.setEmpty(); }
   
   // update
-  obj.update = function(t_multiplier)
+  obj.countdown = function(t_multiplier)
   { 
     // unset timers don't tend to ring
     if(!obj.isSet())

@@ -76,6 +76,11 @@ function Bank(starting_balance, max_balance, min_balance)
     return amount;
   }
   
+  obj.setBalance = function(amount)
+  {
+    balance = amount;
+  }
+  
   obj.setFull = function()
   {
     return obj.deposit(max);
