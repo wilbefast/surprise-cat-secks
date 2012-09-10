@@ -64,8 +64,8 @@ function Cloud(init_type, init_pos, init_dir, bonus_speed, custom_draw)
   var pos = new V2(init_pos.x(), init_pos.y()),	
   // V2: velocity
       speed = new V2(init_dir.x(), init_dir.y()),	
-  // real: between 0 (birth) and 1 (death)
-      age = 0.0,	
+  // Bank: real between 0 (birth) and 1 (death)
+      age = new Bank(),
   // real: between 0 (birth) and typ.MAX_SIZE (death)
       size = 0.0,
       half_size = 0.0,
@@ -99,7 +99,7 @@ function Cloud(init_type, init_pos, init_dir, bonus_speed, custom_draw)
   // injections
   obj.draw = function()
   {
-    var colour = typ.COLOUR[cloud_type] + (1.0-age) + ")";
+    var colour = typ.COLOUR[cloud_type] + (1.0-age.getBalance()) + ")";
     return (custom_draw != null) ? custom_draw(pos, size, colour) 
 				  : default_draw(pos, size, colour)
   }
@@ -111,20 +111,20 @@ function Cloud(init_type, init_pos, init_dir, bonus_speed, custom_draw)
     
     // the clouds gets older, becoming larger and thinner, then dying
     // age
-    age += typ.AGING_SPEED[cloud_type] * t_multiplier;
-    if(age >= 1.0)
+    age.deposit(typ.AGING_SPEED[cloud_type] * t_multiplier);
+    if(age.isFull())
       return true;
     // size
-    size = typ.MAX_SIZE[cloud_type] * age;
+    size = typ.MAX_SIZE[cloud_type] * age.getBalance();
     half_size = size * 0.5;
     // damage
-    damage = (1.0-age)*typ.BASE_DAMAGE[cloud_type];
+    damage = (1.0-age.getBalance())*typ.BASE_DAMAGE[cloud_type];
     
     // apply friction
     if(speed.x() || speed.y())
     {
       if(speed.norm2() > 0.01)
-	speed.scale(Math.pow(1-typ.FRICTION[cloud_type],t_multiplier));
+	speed.scale(Math.pow(1-typ.FRICTION[cloud_type], t_multiplier));
       else
 	speed.setNorm(0.0);
     }
