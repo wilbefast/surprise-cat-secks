@@ -19,6 +19,25 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+var element_offset = function(element)
+{
+  var ox = 0, oy = 0;
+  if (element.offsetParent) 
+  {
+    do 
+    {
+      ox += element.offsetLeft;
+      oy += element.offsetTop;
+    } 
+    while (element = element.offsetParent);
+    
+    return { x: ox, y: oy };
+  }
+  else
+    return undefined;
+}
+var canvas_offset = element_offset(canvas);
+
 var areColliding = function(a, b)
 {
   return (a.getPosition().dist2(b.getPosition()) 

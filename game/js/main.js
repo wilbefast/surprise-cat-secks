@@ -80,8 +80,8 @@ canvas.onselect = function () { return false; }		// don't select text
 
 canvas.onmousedown = function(event)
 {
-  Game.INSTANCE.injectMouseDown(event.layerX - canvas.offsetLeft,
-		      event.layerY - canvas.offsetTop, event.which);
+  Game.INSTANCE.injectMouseDown(event.pageX-canvas_offset.x,
+				event.pageY-canvas_offset.y, event.which);
   event.stopPropagation();
   
   return false;	// don't select text
@@ -89,16 +89,15 @@ canvas.onmousedown = function(event)
 
 canvas.onmouseup = function(event)
 {
-  Game.INSTANCE.injectMouseUp(event.layerX - canvas.offsetLeft,
-		     event.layerY - canvas.offsetTop, event.which);
+  Game.INSTANCE.injectMouseUp(event.pageX-canvas_offset.x,
+			      event.pageY-canvas_offset.y, event.which);
   event.stopPropagation();
 }
 
 canvas.onmousemove = function(event)
 {
-
-  Game.INSTANCE.injectMouseMove(event.layerX - canvas.offsetLeft,
-		     event.layerY - canvas.offsetTop);
+  Game.INSTANCE.injectMouseMove(event.pageX-canvas_offset.x,
+				event.pageY-canvas_offset.y);
   event.stopPropagation();
 }
 
