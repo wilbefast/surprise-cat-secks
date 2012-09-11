@@ -45,7 +45,7 @@ function Decal(base_pos, base_size, init_colour, init_type,
   // local
   var pos_var = (opt_pos_var_rel != null ? opt_pos_var_rel : typ.POS_VAR_REL*base_size),
       size_var = (opt_size_var != null ? opt_size_var : typ.SIZE_VAR);
-  
+      
   // real attributes
   // V2: current position
   var pos = new V2(base_pos.x()+rand_between(-pos_var, pos_var), 

@@ -19,16 +19,31 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+function format_time(t)
+{
+  var minutes = Math.floor(t/60);
+    if(minutes < 10) minutes = '0' + minutes;
+  var seconds = Math.floor(t)%60;
+    if(seconds < 10) seconds = '0' + seconds;
+  return "" + minutes + ':' +  seconds;
+}
 
 /*** GAME CLASS ***/
 
 /// CLASS VARIABLES/CONSTANTS
+Game.WIN_THRESHOLD = 0.9
 // strings
 Game.TITLE = "Surprise Cat Secks";
 Game.AUTHOR = "By William 'wilbefast' J.D.";
-Game.TUT_TEXT = ["You are to breed a new strain of super-kittie.",
-		  "Use your weapons sparingly (SPACE/ENTER).",
-		  "Good luck and have fun!" ];
+Game.TUT_TEXT = ["We require cats with certain immunities", "",
+		  "You will breed us a " 
+		  + Math.floor(Game.WIN_THRESHOLD*100)+ "% resistant cat" ];
+Game.TUT_CATTEXT = ["None", "Napalm", "Sarin", "Nitrogen", "All" ];
+// other tutorial goodness
+Game.TUT_CATCOLOUR = [ "rgb(255,255,255)", "rgb(255,0,0)", "rgb(0,255,0)", 
+			"rgb(0,0,255)", "rgb(0,0,0)" ]
+Game.SCORE_LOSETEXT = [ "You have killed all your wards", "We are most displeased." ];
+Game.SCORE_WINTEXT = [ "You have done as was requested.", "We are most pleased." ];
 // timing: maximum number of frames per second
 Game.MAX_FPS = 60;
 // left keys
@@ -119,7 +134,7 @@ function Game()
     
     // create new objects
     new Player(canvas.width/2, canvas.height/2);
-    for(var i = 0; i < typ.STARTING_KITTENS-1; i++)
+    for(var i = 0; i < typ.STARTING_KITTENS; i++)
       new Kitten();
 
     // keyboard
@@ -283,6 +298,13 @@ function Game()
   */
   
   // getters
+  obj.getTweet = function()
+  {
+    return "I bred a " + Math.floor(Kitten.max_fitness*100) + "% resistant cat"
+	    + " in " + format_time(time) + ", killing " + (kills || "none");
+	    
+  }
+  
   obj.getInputMove = function() 
   { 
     return k_direction; 
@@ -352,22 +374,25 @@ function Game()
       updateObjects(Decal.objects, delta_t);
       
       // check if there are no cats left
-      if(Kitten.objects.length == 0)
+      if(Kitten.objects.length == 0
+      // check if cat resistance if other the desired level
+      || Kitten.max_fitness > Game.WIN_THRESHOLD)
       {
-	mode++;
+	// stop sound
 	for(var i = 0; i < 3; i++)
 	  Player.SND_SPRAY_ARRAY[i].pause();
+	Player.SND_STEPS.pause();
+	
+
+	// display score screen
+	mode++;
       }
     }
     
     // update the GUI
     tdata_cats.innerHTML = Kitten.objects.length + "/" + Kitten.MAX_NUMBER;
     tdata_kills.innerHTML = kills;
-    var minutes = Math.floor(time/60);
-      if(minutes < 10) minutes = '0' + minutes;
-    var seconds = Math.floor(time)%60;
-      if(seconds < 10) seconds = '0' + seconds;
-    tdata_time.innerHTML = minutes + ':' +  seconds;
+    tdata_time.innerHTML = format_time(time);
     tdata_min.innerHTML = Math.floor(Kitten.min_fitness*100) + '%';
     tdata_mean.innerHTML = Math.floor(Kitten.mean_fitness*100) + '%';
     tdata_max.innerHTML = Math.floor(Kitten.max_fitness*100) + '%';
@@ -426,13 +451,27 @@ function Game()
 	// draw outline overlay
 	draw_outline();
 	// draw tutorial
-	context.fillStyle = typ.C_TEXT;
-	context.font = "16pt cube";
 	context.textAlign = "center";
 	context.textBaseline = "middle";
+	var pos = new V2();
 	for(var i = 0; i < 3; i++)
+	{
+	  // text
+	  context.font = "20pt cube";
+	  context.fillStyle = typ.C_TEXT;
+	  pos.setXY(canvas.width/2, canvas.height*(i+1)/4);
 	  context.fillText(typ.TUT_TEXT[i], 
-			  canvas.width/2, canvas.height*(i+1)/4);
+			  canvas.width/2, pos.y());
+			  
+	  // cats
+	  context.font = "18pt cube";
+	  if(i == 1) for(var j = 0; j < 5; j++)
+	  {
+	    pos.setXY((j+1)*canvas.width/6, canvas.height/2 - 16);
+	    Kitten.static_draw(pos, typ.TUT_CATCOLOUR[j]);
+	    context.fillText(typ.TUT_CATTEXT[j], pos.x(), pos.y()+32); 
+	  }
+	}
 	break;
 	
       case typ.SCORE:
@@ -440,16 +479,43 @@ function Game()
 	draw_outline();
 	// draw epilogue text
 	context.fillStyle = Game.C_TEXT;
-	context.font = "18pt cube";
+	context.font = "20pt cube";
 	context.textAlign = "center";
 	context.textBaseline = "middle";
-	context.fillText("You killed all the kitties. You monster!", 
-			 canvas.width/2, canvas.height/2);
+	for(var i = 0; i < 2; i++)
+	{
+	  context.fillText((Kitten.objects.length == 0) 
+	    ? typ.SCORE_LOSETEXT[i] : typ.SCORE_WINTEXT[i],
+		    canvas.width/2, (i+1)*canvas.height/3);
+	}
+	var pos = new V2(canvas.width/2, canvas.height/2);
+	// draw epilogue blood stain
+	if(Kitten.objects.length == 0)
+	{
+	  if(obj.score_stain == undefined)
+	  {
+	    obj.score_stain = new Array();
+	    for(var i = 0; i < 3; i++)
+	      obj.score_stain[i] =  new Decal(pos, 24, "rgba(255,0,0," , 
+					      Decal.BLOOD);
+	  }
+	  for(var i = 0; i < 3; i++)	    
+	    obj.score_stain[i].draw();
+	}
+	// draw epilogue cat
+	else
+	  Kitten.static_draw(pos, "rgb(25, 25, 25)");
+
+	// draw arrow to tweet this score
+	context.fillStyle = typ.C_MASK;
+	context.textAlign = "left";
+	context.fillText("<- Let the world know?", 48, canvas.height-48);
+	
 	break;
     }
   }
   
-  obj.injectMouseDown = function(x, y) 
+  obj.injectMouseDown = function(x, y, which) 
   { 
     if(!focus)
       obj.setFocus(true);
@@ -458,11 +524,16 @@ function Game()
       switch(mode)
       {
 	case typ.PLAY:
-	  m_shoot = true;
-	  m_pos.setXY(x, y);
-	  injectMouseDir(x, y);
-	  // make cursor appear
-	  m_visibility.setFull();
+	  if(which == 1)
+	  {
+	    m_shoot = true;
+	    m_pos.setXY(x, y);
+	    injectMouseDir(x, y);
+	    // make cursor appear
+	    m_visibility.setFull();
+	  }
+	  else
+	    Player.objects[0].change_weapon(1);
 	  break;
       
 	case typ.TUTORIAL:
@@ -476,10 +547,11 @@ function Game()
     }
   }
   
-  obj.injectMouseUp = function(x, y) 
+  obj.injectMouseUp = function(x, y, which) 
   {   
     // release mouse button even when not focused!
-    m_shoot = false;
+    if(which == 1) 
+      m_shoot = false;
   }
   
   obj.injectMouseMove = function(x, y)

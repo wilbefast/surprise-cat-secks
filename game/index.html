@@ -52,10 +52,11 @@
       <tr>
     
 
-
+  <th colspan="2"><a id="tweet_this" target="_blank" href="">Tweet this score!</a>
 
     </table>
-      <canvas width="640" height="480" id='game_canvas'>
+      <canvas width="640" height="480" id='game_canvas' 
+	      oncontextmenu="return false;">
 	<img src=../img/scs_preview.png />
 	<p>Can't load HTML 5 canvas: is your browser up to date?</p>
       </canvas>
@@ -72,6 +73,7 @@
       tdata_kills = document.getElementById('tdata_kills'),
       tdata_fitness = document.getElementById('tdata_fitness'),
       tdata_time = document.getElementById('tdata_time');
+      tweet_this = document.getElementById('tweet_this');
   </script>
 
   <!-- include your scripts in the order they will be executed -->

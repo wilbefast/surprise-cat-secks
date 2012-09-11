@@ -72,6 +72,8 @@ for(var i = 0; i < Cloud.N_TYPES; i++)
 Player.SND_STEPS = load_audio("steps.wav");
 Player.SND_STEPS.volume = 0.3;
 Player.SND_STEPS.loop = true;
+Player.SND_WPN_CHANGE = load_audio("reload.wav");
+Player.SND_WPN_CHANGE.volume = 0.5;
 
 // CLASS VARIABLES
 Player.objects;
@@ -165,6 +167,9 @@ function Player(x, y)
       weapon_type -= Cloud.N_TYPES;
     else if(weapon_type < 0)
       weapon_type += Cloud.N_TYPES;
+    
+    // play weapon-change sounds
+    typ.SND_WPN_CHANGE.play();
     
   }
   

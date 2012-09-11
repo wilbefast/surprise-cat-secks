@@ -81,7 +81,7 @@ canvas.onselect = function () { return false; }		// don't select text
 canvas.onmousedown = function(event)
 {
   Game.INSTANCE.injectMouseDown(event.layerX - canvas.offsetLeft,
-		      event.layerY - canvas.offsetTop);
+		      event.layerY - canvas.offsetTop, event.which);
   event.stopPropagation();
   
   return false;	// don't select text
@@ -90,7 +90,7 @@ canvas.onmousedown = function(event)
 canvas.onmouseup = function(event)
 {
   Game.INSTANCE.injectMouseUp(event.layerX - canvas.offsetLeft,
-		     event.layerY - canvas.offsetTop);
+		     event.layerY - canvas.offsetTop, event.which);
   event.stopPropagation();
 }
 
@@ -135,6 +135,25 @@ document.onmousedown = function(e)
   // since we consumed the canvas mouse events, this only occurs if we click
   // outside of the canvas ;)
   Game.INSTANCE.setFocus(false);
+}
+
+/* INPUT HANDLING -- LINK FIXER */
+
+tweet_this.onmouseover = function(e)
+{
+  var space_code = "%20", colon_code = "%3A", slash_code = "%2F", 
+		    percent_code = "%25";
+  var encoded_url = "http://wilbefast.com/html5/surprise_cat_secks/"
+		      .replace(/\:/g, colon_code).replace(/\//g, slash_code);
+  
+  tweet_this.href = 
+    "https://twitter.com/intent/tweet?hashtags=SurpriseCatSecks"
+    + "&url=" + encoded_url 
+    + "&text=" + (Game.INSTANCE.getTweet()
+		    .replace(/\%/g, percent_code).replace(/\ /g, space_code)
+		    .replace(/\:/g, colon_code).replace(/\//g, slash_code));
+    
+  
 }
 
 /* LAUNCH THE APPLICATION */

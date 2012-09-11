@@ -63,7 +63,7 @@ Kitten.REPRODUCE_COST = Kitten.MAX_HITPOINTS * 0.6;
 Kitten.START_HITPOINTS = Kitten.REPRODUCE_COST * 0.5;
 Kitten.PLAYER_TOUCH_DAMAGE = Kitten.MAX_HITPOINTS * 0.2;
 // repoduction
-Kitten.MAX_MUTATION = 0.2;
+Kitten.MAX_MUTATION = 0.18;
 Kitten.DECREPITUDE_SPEED = 0.0005;
 Kitten.REPRODUCE_MAX_DECREPITUDE = 0.75;
 Kitten.MATURE_SPEED = 0.003;
@@ -109,6 +109,29 @@ Kitten.worst = Kitten.best = null;
 Kitten.objects;
 
 /// CLASS FUNCTIONS
+
+Kitten.static_draw = function(pos, colour, half_size, size, draw_face)
+{
+  // optional parameters
+  if(half_size == undefined) 
+    half_size = Kitten.HALF_SIZE;
+  if(size == undefined) 
+    size = 2*half_size;
+  if(draw_face == undefined) 
+    draw_face = true;
+  
+  // draw colour
+  context.fillStyle = colour;
+  context.fillRect(pos.x()-half_size, pos.y()-half_size, size, size);
+  // draw face
+  if(draw_face)
+    context.drawImage(Kitten.IMG_FACE, pos.x()-half_size, pos.y()-half_size 
+						/*, size, size*/);		     
+  // draw outline
+  context.lineWidth = Kitten.OUTLINE_WIDTH;
+  context.strokeStyle = Kitten.OUTLINE_COLOUR;
+  context.strokeRect(pos.x()-half_size, pos.y()-half_size, size, size);
+}
 
 Kitten.reset_counters = function()
 {
@@ -224,7 +247,7 @@ function Kitten(mum_resist, dad_resist, mum_pos)
 	resist[i] = 0;
     }
     else
-      resist[i] = 0.0; //rand_between(0.0, 1.0);
+      resist[i] = 0.0; // rand_between(0.0, 1.0);
     
   }
   // cache the colour corresponding to these resistances
@@ -463,17 +486,9 @@ function Kitten(mum_resist, dad_resist, mum_pos)
       draw_heart(pos, typ.SIZE*rand_between(0.8,1.0), 
 		 Cloud.COLOUR[Cloud.FERTILITY] + (regenerate/typ.MAX_REGENERATE) + ")");
     
-    // draw colour
-    context.fillStyle = colour;
-    context.fillRect(pos.x()-half_size, pos.y()-half_size, size, size);
-    // draw face
-    if(maturity == 1.0 && decrepitude < typ.REPRODUCE_MAX_DECREPITUDE)
-      context.drawImage(typ.IMG_FACE, 
-			pos.x()-typ.HALF_SIZE, pos.y()-typ.HALF_SIZE);		     
-    // draw outline
-    context.lineWidth = typ.OUTLINE_WIDTH;
-    context.strokeStyle = typ.OUTLINE_COLOUR;
-    context.strokeRect(pos.x()-half_size, pos.y()-half_size, size, size);
+    // draw the cat itself
+    typ.static_draw(pos, colour, half_size, size, 
+	  maturity == 1.0 && decrepitude < typ.REPRODUCE_MAX_DECREPITUDE);
   }
   
   obj.update = function(t_multiplier)
