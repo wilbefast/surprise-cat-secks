@@ -608,7 +608,7 @@ function Game()
 
   /* INITIALISE AND RETURN INSTANCE */
   reset();
-  //typ.music.play(); typ.music.loop = true;
+  typ.music.play(); typ.music.loop = true;
   return obj;
 }
 
