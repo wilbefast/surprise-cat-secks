@@ -1,0 +1,56 @@
+@font-face 
+{
+  font-family: cube;
+  src: url('data/visitor.ttf');
+} 
+
+body
+{
+  font-family:cube;
+  font-size:28px;
+  margin:1%;
+  padding:0%;
+  text-align:center;
+}
+
+p
+{
+  text-align:center;
+}
+
+#text_box
+{
+  background-color:rgb(15,15,15);
+  border:3px solid rgb(221,221,221); 
+  display: inline-block;
+  margin:2%;
+  padding:2%;
+  text-align:left;
+  line-height:105%;
+} 
+
+#canvas_box
+{
+  background-color:rgb(15,15,15);
+  border:3px solid rgb(221,221,221); 
+  display: inline-block;
+  width:900px;
+  padding:1%;
+} 
+
+canvas 
+{ 
+  border:3px solid rgb(221,221,221); 
+  padding:0%;
+  margin:0.5%;
+}
+
+#game_canvas 
+{ 
+  cursor: none;
+}
+
+#game_canvas:active 
+{ 
+  cursor: none;
+}​

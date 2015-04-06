@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="author" content="William Dyce">
+    <link rel="stylesheet" type="text/css" href="main.css" />
+    <link rel="shortcut icon" href="favicon.gif" />
+    <title>Surprise Cat Secks!</title>
+  </head>
+
+  <!-- scripts will use the canvas, so declare it before including them -->
+  <body>
+    
+    <canvas width="640" height="480" id='game_canvas' 
+      oncontextmenu="return false;">
+			<img src="preview.png" />
+			<p>Can't load HTML 5 canvas: is your browser up to date?</p>
+    </canvas>
+
+  </body>
+
+  <!-- definition may vary depending on where your game is hosted -->
+  <script type="text/javascript">
+    var DATA_LOCATION = "data/",
+      canvas = document.getElementById('game_canvas'),
+      context = canvas.getContext('2d'),
+      tdata_cats = document.getElementById('tdata_cats'),
+      tdata_kills = document.getElementById('tdata_kills'),
+      tdata_fitness = document.getElementById('tdata_fitness'),
+      tdata_time = document.getElementById('tdata_time');
+      tweet_this = document.getElementById('tweet_this');
+  </script>
+
+  <!-- include your scripts in the order they will be executed -->
+
+  <!-- declare functions -->
+  <script type="text/javascript" src="js/utility.js"></script>
+  <script type="text/javascript" src="js/loading.js"></script>
+
+  <!-- declare utility classes -->
+  <script type="text/javascript" src="js/V2.js"></script>
+  <script type="text/javascript" src="js/Bank.js"></script>
+  <script type="text/javascript" src="js/Timer.js"></script>
+
+  <!-- declare game-object classes -->
+  <script type="text/javascript" src="js/Decal.js"></script>
+  <script type="text/javascript" src="js/Kitten.js"></script>
+  <script type="text/javascript" src="js/Cloud.js"></script>
+  <script type="text/javascript" src="js/Player.js"></script>
+
+  <!-- declare the main game-holder class -->
+  <script type="text/javascript" src="js/Game.js"></script>
+
+  <!-- launch the game -->
+  <script type="text/javascript" src="js/main.js"></script>
+
+</html>
